@@ -1,14 +1,14 @@
-import { Router } from 'express';
-import { login } from '../../handlers/authHandlers'; // Adjusted import path
-import { authLimiter } from '../../middleware/rateLimiter'; // Adjusted import path
-import { validateRequest } from '../../middleware/validateRequest'; // Adjusted import path
-import { authSchemas } from '../../validation/schemas'; // Adjusted import path
+import { Router } from "express";
+import { login } from "../../../handlers/authHandlers"; // Adjusted import path
+import { authLimiter } from "../../../middleware/rateLimiter"; // Adjusted import path
+import { validateRequest } from "../../../middleware/validateRequest"; // Adjusted import path
+import { authSchemas } from "../../../validation/schemas"; // Adjusted import path
 
 const router = Router();
 
 /**
  * @swagger
- * /auth/login:
+ * /user/auth/login:
  *   post:
  *     summary: Login a user
  *     tags: [Auth]
@@ -32,6 +32,6 @@ const router = Router();
  *       400:
  *         description: Invalid credentials
  */
-router.post('/login', authLimiter, validateRequest(authSchemas.login), login);
+router.post("/login", authLimiter, validateRequest(authSchemas.login), login);
 
 export default router;

@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { getAnalytics } from '../handlers/analyticsHandlers';
-import { auth } from '../middleware/auth';
-import { authorize } from '../middleware/authorize';
-import { PERMISSIONS } from '../config/permissions';
+import { getAnalytics } from '../../handlers/analyticsHandlers';
+import { auth } from '../../middleware/auth';
+import { authorize } from '../../middleware/authorize';
+import { PERMISSIONS } from '../../config/permissions';
 
 const router = Router();
 

@@ -1,19 +1,19 @@
 import { Router } from 'express';
-import { createIdea } from '../../handlers/ideaHandlers';
+import { createBadge } from '../../handlers/badgeHandlers';
 import { auth } from '../../middleware/auth';
 import { authorize } from '../../middleware/authorize';
 import { PERMISSIONS } from '../../config/permissions';
 import { validateRequest } from '../../middleware/validateRequest';
-import { ideaSchemas } from '../../validation/schemas';
+import { badgeSchemas } from '../../validation/schemas';
 
 const router = Router();
 
 /**
  * @swagger
- * /ideas:
+ * /badges:
  *   post:
- *     summary: Create a new idea
- *     tags: [Ideas]
+ *     summary: Create a new badge (admin only)
+ *     tags: [Badges]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -21,21 +21,15 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/NewIdea'
+ *             $ref: '#/components/schemas/NewBadge'
  *     responses:
  *       201:
- *         description: Created idea
+ *         description: Created badge
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Idea'
- *       400:
- *         description: Bad request
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
+ *               $ref: '#/components/schemas/Badge'
  */
-router.post('/', auth, authorize(PERMISSIONS.CREATE_IDEA), validateRequest(ideaSchemas.create), createIdea);
+router.post('/', auth, authorize(PERMISSIONS.MANAGE_BADGES), validateRequest(badgeSchemas.create), createBadge);
 
 export default router;

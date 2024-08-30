@@ -1,14 +1,14 @@
-import { Router } from 'express';
-import { register } from '../../handlers/authHandlers'; // Adjusted import path
-import { authLimiter } from '../../middleware/rateLimiter'; // Adjusted import path
-import { validateRequest } from '../../middleware/validateRequest'; // Adjusted import path
-import { authSchemas } from '../../validation/schemas'; // Adjusted import path
+import { Router } from "express";
+import { register } from "../../../handlers/authHandlers"; // Adjusted import path
+import { authLimiter } from "../../../middleware/rateLimiter"; // Adjusted import path
+import { validateRequest } from "../../../middleware/validateRequest"; // Adjusted import path
+import { authSchemas } from "../../../validation/schemas"; // Adjusted import path
 
 const router = Router();
 
 /**
  * @swagger
- * /auth/register:
+ * /user/auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
@@ -42,6 +42,11 @@ const router = Router();
  *       400:
  *         description: Bad request
  */
-router.post('/register', authLimiter, validateRequest(authSchemas.register), register);
+router.post(
+	"/register",
+	authLimiter,
+	validateRequest(authSchemas.register),
+	register
+);
 
 export default router;

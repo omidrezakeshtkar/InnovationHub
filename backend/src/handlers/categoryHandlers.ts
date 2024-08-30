@@ -1,12 +1,17 @@
 import { Request, Response } from 'express';
 import { Category } from '../models';
 
+// Handler for getting categories with optional search
 export const getCategories = async (req: Request, res: Response) => {
   try {
-    const categories = await Category.find();
-    res.json(categories);
+    const { search } = req.query; // Get the search query parameter
+    const query = search ? { name: { $regex: search, $options: 'i' } } : {}; // Adjust the field name as necessary
+
+    const categories = await Category.find(query); // Find categories based on the query
+
+    res.status(200).json(categories);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching categories' });
+    res.status(500).json({ message: 'Error retrieving categories', error });
   }
 };
 

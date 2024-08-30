@@ -15,13 +15,14 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-	origin:
-		config.nodeEnv === "development"
-			? "http://localhost:3000"
-			: "https://your-production-url.com",
+	origin: [
+		"http://localhost:4000", // Allow your frontend origin
+		"http://localhost:3000"  // Allow your backend origin (if needed)
+	],
 	optionsSuccessStatus: 200,
 };
 
+// Apply CORS middleware
 app.use(cors(corsOptions));
 
 // Use helmet with adjusted settings for development
@@ -47,7 +48,7 @@ app.get("/api-docs.json", (req, res) => {
 });
 
 // Serve Swagger UI
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Apply routes
 app.use("/api", routes);

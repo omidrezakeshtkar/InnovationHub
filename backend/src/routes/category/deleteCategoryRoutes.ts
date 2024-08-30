@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { deleteIdea } from '../../handlers/ideaHandlers';
+import { deleteCategory } from '../../handlers/categoryHandlers';
 import { auth } from '../../middleware/auth';
 import { authorize } from '../../middleware/authorize';
 import { PERMISSIONS } from '../../config/permissions';
@@ -8,25 +8,22 @@ const router = Router();
 
 /**
  * @swagger
- * /ideas/{id}:
+ * /categories/{id}:
  *   delete:
- *     summary: Delete an idea by its ID
- *     tags: [Ideas]
+ *     summary: Delete a category (admin only)
+ *     tags: [Categories]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: The ID of the idea to delete
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: The idea with the specified ID has been deleted
- *       404:
- *         description: The idea with the specified ID was not found
+ *         description: Category deleted successfully
  */
-router.delete('/:id', auth, authorize(PERMISSIONS.DELETE_IDEA), deleteIdea);
+router.delete('/:id', auth, authorize(PERMISSIONS.MANAGE_CATEGORIES), deleteCategory);
 
 export default router;
