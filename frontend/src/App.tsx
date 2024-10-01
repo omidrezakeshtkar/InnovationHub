@@ -11,6 +11,7 @@ import { ContactPageComponent } from "./components/contact-page";
 import { PrivacyPolicyComponent } from "./components/privacy-policy-page";
 import { TermsOfServiceComponent } from "./components/terms-of-service-page";
 import { UserProfileComponent } from "./components/user-profile";
+import { AdminDashboardComponent } from "./components/admin-dashboard";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 
@@ -33,6 +34,7 @@ function App() {
 						<Route path="/sign-up" element={<SignUpComponent />} />
 						<Route path="/forgot-password" element={<ForgotPasswordComponent />} />
 						<Route path="/profile" element={<UserProfileComponent />} />
+						<Route path="/admin" element={<AdminDashboardComponent />} />
 					</Routes>
 				</div>
 			</main>
