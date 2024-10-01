@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { register } from "../../../handlers/authHandlers"; // Adjusted import path
-import { authLimiter } from "../../../middleware/rateLimiter"; // Adjusted import path
-import { validateRequest } from "../../../middleware/validateRequest"; // Adjusted import path
-import { authSchemas } from "../../../validation/schemas"; // Adjusted import path
+import { register } from "../../../handlers/authHandlers";
+import { authLimiter } from "../../../middleware/rateLimiter";
+import { validateRequest } from "../../../middleware/validateRequest";
+import { schemas } from "../../../validation/schemas"; // Updated import
 
 const router = Router();
 
@@ -12,6 +12,8 @@ const router = Router();
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -45,7 +47,7 @@ const router = Router();
 router.post(
 	"/register",
 	authLimiter,
-	validateRequest(authSchemas.register),
+	validateRequest(schemas.user.register),
 	register
 );
 

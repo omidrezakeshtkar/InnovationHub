@@ -1,14 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import Joi from 'joi';
-import { AppError } from './errorHandler';
+import { AnyZodObject } from 'zod';
 
-export const validateRequest = (schema: Joi.ObjectSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const { error } = schema.validate(req.body);
-    if (error) {
-      const errorMessage = error.details.map((detail) => detail.message).join(', ');
-      return next(new AppError(errorMessage, 400));
+export const validateRequest = (schema: AnyZodObject) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await schema.parseAsync({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      });
+      return next();
+    } catch (error) {
+      return res.status(400).json(error);
     }
-    next();
   };
-};

@@ -1,17 +1,17 @@
 import { Router } from 'express';
-import overallAnalyticsRoutes from './overallAnalyticsRoutes';
-import userEngagementRoutes from './userEngagementRoutes';
-import ideaTrendsRoutes from './ideaTrendsRoutes';
-import categoryAnalyticsRoutes from './categoryAnalyticsRoutes';
-import analyticsRoutes from './analytics'; // Import the default analytics route
+import { getAnalytics, getCategoryAnalytics, getIdeaTrendsAnalytics, getOverallAnalytics, getUserEngagementAnalytics } from '../../handlers/analyticsHandlers';
+import { auth } from '../../middleware/auth';
+import { authorize } from '../../middleware/authorize';
+import { PERMISSIONS } from '../../config/permissions';
+import { validateRequest } from '../../middleware/validateRequest';
+import { schemas } from '../../validation/schemas';
 
 const router = Router();
 
-// Assign routes to the main analytics router
-router.use('/', analyticsRoutes); // Add the default analytics route
-router.use('/overall', overallAnalyticsRoutes);
-router.use('/user-engagement', userEngagementRoutes);
-router.use('/idea-trends', ideaTrendsRoutes);
-router.use('/categories', categoryAnalyticsRoutes);
+router.get('/', auth, authorize(PERMISSIONS.VIEW_ANALYTICS), validateRequest(schemas.analytics.getAnalytics), getAnalytics);
+router.get('/categories', auth, authorize(PERMISSIONS.VIEW_ANALYTICS), validateRequest(schemas.analytics.getCategoryAnalytics), getCategoryAnalytics);
+router.get('/idea-trends', auth, authorize(PERMISSIONS.VIEW_ANALYTICS), validateRequest(schemas.analytics.getIdeaTrendsAnalytics), getIdeaTrendsAnalytics);
+router.get('/overall', auth, authorize(PERMISSIONS.VIEW_ANALYTICS), validateRequest(schemas.analytics.getOverallAnalytics), getOverallAnalytics);
+router.get('/user-engagement', auth, authorize(PERMISSIONS.VIEW_ANALYTICS), validateRequest(schemas.analytics.getUserEngagementAnalytics), getUserEngagementAnalytics);
 
 export default router;

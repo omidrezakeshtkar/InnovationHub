@@ -8,10 +8,10 @@ import refreshTokenRoute from './refreshToken'; // Import the refresh token rout
 const router = Router();
 
 // Assign routes to the main category router
-router.use('/', loginRoute); // Use the login route
-router.use('/', logoutRoute); // Use the logout route
-router.use('/', registerRoute); // Use the register route
-router.use('/', refreshTokenRoute); // Use the refresh token route
+router.use('/login', loginRoute); // Use the login route
+router.use('/logout', logoutRoute); // Use the logout route
+router.use('/register', registerRoute); // Use the register route
+router.use('/refresh-token', refreshTokenRoute); // Use the refresh token route
 
 // Export the router to be used in other parts of the application
 export default router;

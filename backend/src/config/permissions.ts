@@ -7,7 +7,7 @@ export const PERMISSIONS = {
   MANAGE_USERS: 'manage:users',
   MANAGE_CATEGORIES: 'manage:categories',
   MANAGE_BADGES: 'manage:badges',
-  VIEW_ANALYTICS: 'view:analytics',
+  VIEW_ANALYTICS: 'view_analytics',
   MANAGE_DEPARTMENTS: 'manage:departments', // Added permission for managing departments
   VIEW_DEPARTMENT: 'view:department', // Added permission for viewing departments
 };

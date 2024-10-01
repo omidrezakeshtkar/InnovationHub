@@ -1,82 +1,146 @@
-import Joi from 'joi';
+import { z } from 'zod';
 
-export const authSchemas = {
-  register: Joi.object({
-    name: Joi.string().required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
-    role: Joi.string().valid('user', 'moderator', 'admin', 'department_head').required(),
-    department: Joi.string().required(),
+const authSchemas = {
+  register: z.object({
+    name: z.string(),
+    email: z.string().email(),
+    password: z.string().min(6),
+    role: z.enum(['user', 'moderator', 'admin', 'department_head']),
+    department: z.string(),
   }),
 
-  login: Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-  }),
-};
-
-export const ideaSchemas = {
-  create: Joi.object({
-    title: Joi.string().required(),
-    description: Joi.string().required(),
-    categoryId: Joi.string().required(),
-    department: Joi.string().required(),
-    tags: Joi.array().items(Joi.string()),
-  }),
-
-  update: Joi.object({
-    title: Joi.string(),
-    description: Joi.string(),
-    categoryId: Joi.string(),
-    department: Joi.string(),
-    tags: Joi.array().items(Joi.string()),
-  }),
-
-  comment: Joi.object({
-    content: Joi.string().required(),
+  login: z.object({
+    email: z.string().email(),
+    password: z.string(),
   }),
 };
 
-export const userSchemas = {
-  updateProfile: Joi.object({
-    name: Joi.string(),
-    email: Joi.string().email(),
+const ideaSchemas = {
+  create: z.object({
+    title: z.string(),
+    description: z.string(),
+    categoryId: z.string(),
+    department: z.string(),
+    tags: z.array(z.string()).optional(),
+  }),
+
+  update: z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    categoryId: z.string().optional(),
+    department: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+  }),
+
+  comment: z.object({
+    content: z.string(),
+  }),
+
+  getById: z.object({
+    id: z.string(),
+  }),
+
+  delete: z.object({
+    id: z.string(),
+  }),
+
+  approve: z.object({
+    id: z.string(),
+  }),
+
+  vote: z.object({
+    id: z.string(),
+  }),
+
+  getVersions: z.object({
+    id: z.string(),
   }),
 };
 
-export const categorySchemas = {
-  create: Joi.object({
-    name: Joi.string().required(),
-    description: Joi.string(),
+const userSchemas = {
+  register: authSchemas.register,
+  login: authSchemas.login,
+  updateProfile: z.object({
+    name: z.string().optional(),
+    email: z.string().email().optional(),
   }),
-
-  update: Joi.object({
-    name: Joi.string(),
-    description: Joi.string(),
-  }),
-};
-
-export const badgeSchemas = {
-  create: Joi.object({
-    name: Joi.string().required(),
-    description: Joi.string().required(),
-    criteria: Joi.string().required(),
-  }),
-
-  update: Joi.object({
-    name: Joi.string(),
-    description: Joi.string(),
-    criteria: Joi.string(),
+  refreshToken: z.object({
+    refreshToken: z.string(),
   }),
 };
 
-export const departmentSchemas = {
-  create: Joi.object({
-    name: Joi.string().required(),
-    description: Joi.string().optional()
+const categorySchemas = {
+  create: z.object({
+    name: z.string(),
+    description: z.string().optional(),
   }),
-  update: Joi.object({
-    name: Joi.string().optional(),
-    description: Joi.string().optional()
-  })
+
+  update: z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+  }),
+
+  getById: z.object({
+    id: z.string(),
+  }),
+
+  delete: z.object({
+    id: z.string(),
+  }),
+};
+
+const badgeSchemas = {
+  create: z.object({
+    name: z.string(),
+    description: z.string(),
+    criteria: z.string(),
+  }),
+
+  update: z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    criteria: z.string().optional(),
+  }),
+
+  getById: z.object({
+    id: z.string(),
+  }),
+
+  delete: z.object({
+    id: z.string(),
+  }),
+};
+
+const departmentSchemas = {
+  create: z.object({
+    name: z.string(),
+    description: z.string().optional(),
+  }),
+  update: z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+  }),
+  getById: z.object({
+    id: z.string(),
+  }),
+  delete: z.object({
+    id: z.string(),
+  }),
+};
+
+const analyticsSchemas = {
+  getAnalytics: z.object({}),
+  getCategoryAnalytics: z.object({}),
+  getIdeaTrendsAnalytics: z.object({}),
+  getOverallAnalytics: z.object({}),
+  getUserEngagementAnalytics: z.object({}),
+};
+
+export const schemas = {
+  user: userSchemas,
+  idea: ideaSchemas,
+  badge: badgeSchemas,
+  category: categorySchemas,
+  department: departmentSchemas,
+  analytics: analyticsSchemas,
 };

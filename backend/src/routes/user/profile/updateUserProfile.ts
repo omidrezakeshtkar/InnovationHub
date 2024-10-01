@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { updateUserProfile } from '../../../handlers/userHandlers';
 import { auth } from '../../../middleware/auth';
 import { validateRequest } from '../../../middleware/validateRequest';
-import { userSchemas } from '../../../validation/schemas';
+import { schemas } from '../../../validation/schemas';
 
 const router = Router();
 
@@ -28,6 +28,6 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/User'
  */
-router.put('/', auth, validateRequest(userSchemas.updateProfile), updateUserProfile);
+router.put('/', auth, validateRequest(schemas.user.updateProfile), updateUserProfile);
 
 export default router;

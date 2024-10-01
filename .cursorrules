@@ -1,0 +1,1 @@
+each time user asks you a query, write every user prompt that you receive to instructions.txt each one separated by a new line and --- between each prompt. You have to do this each time regardless of the type of prompt. create the file if it doesn't exist. do this along with other files you are creating or modifying.

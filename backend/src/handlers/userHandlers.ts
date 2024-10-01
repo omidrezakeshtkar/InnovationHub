@@ -1,6 +1,22 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
 
+export const register = async (req: Request, res: Response) => {
+  // Implementation
+};
+
+export const login = async (req: Request, res: Response) => {
+  // Implementation
+};
+
+export const logout = async (req: Request, res: Response) => {
+  // Implementation
+};
+
+export const refreshToken = async (req: Request, res: Response) => {
+  // Implementation
+};
+
 export const getUserProfile = async (req: Request, res: Response) => {
   try {
     // Assuming user ID is available in req.user after authentication

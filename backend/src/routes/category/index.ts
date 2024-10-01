@@ -1,15 +1,17 @@
 import { Router } from 'express';
-import getCategoriesRoutes from './getCategoriesRoutes';
-import createCategoryRoutes from './createCategoryRoutes';
-import updateCategoryRoutes from './updateCategoryRoutes';
-import deleteCategoryRoutes from './deleteCategoryRoutes';
+import { createCategory, getCategories, getCategoryById, updateCategory, deleteCategory } from '../../handlers/categoryHandlers';
+import { auth } from '../../middleware/auth';
+import { authorize } from '../../middleware/authorize';
+import { PERMISSIONS } from '../../config/permissions';
+import { validateRequest } from '../../middleware/validateRequest';
+import { schemas } from '../../validation/schemas';
 
 const router = Router();
 
-// Assign routes to the main category router
-router.use('/', getCategoriesRoutes);
-router.use('/', createCategoryRoutes);
-router.use('/', updateCategoryRoutes);
-router.use('/', deleteCategoryRoutes);
+router.post('/', auth, authorize(PERMISSIONS.MANAGE_CATEGORIES), validateRequest(schemas.category.create), createCategory);
+router.get('/', getCategories);
+router.get('/:id', validateRequest(schemas.category.getById), getCategoryById);
+router.put('/:id', auth, authorize(PERMISSIONS.MANAGE_CATEGORIES), validateRequest(schemas.category.update), updateCategory);
+router.delete('/:id', auth, authorize(PERMISSIONS.MANAGE_CATEGORIES), validateRequest(schemas.category.delete), deleteCategory);
 
 export default router;

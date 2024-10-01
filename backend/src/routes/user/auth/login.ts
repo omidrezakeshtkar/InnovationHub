@@ -2,7 +2,7 @@ import { Router } from "express";
 import { login } from "../../../handlers/authHandlers"; // Adjusted import path
 import { authLimiter } from "../../../middleware/rateLimiter"; // Adjusted import path
 import { validateRequest } from "../../../middleware/validateRequest"; // Adjusted import path
-import { authSchemas } from "../../../validation/schemas"; // Adjusted import path
+import { schemas } from "../../../validation/schemas"; // Updated import
 
 const router = Router();
 
@@ -32,6 +32,6 @@ const router = Router();
  *       400:
  *         description: Invalid credentials
  */
-router.post("/login", authLimiter, validateRequest(authSchemas.login), login);
+router.post("/login", authLimiter, validateRequest(schemas.user.login), login);
 
 export default router;

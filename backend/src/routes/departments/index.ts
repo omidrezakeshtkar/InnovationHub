@@ -1,17 +1,17 @@
-import express from "express";
-import { createDepartmentRoute } from './createDepartment';
-import { getDepartmentsRoute } from './getDepartments'; // Public endpoint
-import { getDepartmentRoute } from './getDepartment';
-import { updateDepartmentRoute } from './updateDepartment';
-import { deleteDepartmentRoute } from './deleteDepartment';
+import { Router } from 'express';
+import { createDepartment, getAllDepartments, getDepartmentById, updateDepartment, deleteDepartment } from '../../handlers/departmentHandlers';
+import { auth } from '../../middleware/auth';
+import { authorize } from '../../middleware/authorize';
+import { PERMISSIONS } from '../../config/permissions';
+import { validateRequest } from '../../middleware/validateRequest';
+import { schemas } from '../../validation/schemas';
 
-const router = express.Router();
+const router = Router();
 
-// Make getDepartments public
-router.get('/', getDepartmentsRoute); // No auth middleware here
-router.post('/', createDepartmentRoute);
-router.get('/:id', getDepartmentRoute);
-router.put('/:id', updateDepartmentRoute);
-router.delete('/:id', deleteDepartmentRoute);
+router.post('/', auth, authorize(PERMISSIONS.MANAGE_DEPARTMENTS), validateRequest(schemas.department.create), createDepartment);
+router.get('/', getAllDepartments);
+router.get('/:id', validateRequest(schemas.department.getById), getDepartmentById);
+router.put('/:id', auth, authorize(PERMISSIONS.MANAGE_DEPARTMENTS), validateRequest(schemas.department.update), updateDepartment);
+router.delete('/:id', auth, authorize(PERMISSIONS.MANAGE_DEPARTMENTS), validateRequest(schemas.department.delete), deleteDepartment);
 
 export default router;
