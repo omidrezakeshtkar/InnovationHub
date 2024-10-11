@@ -2,7 +2,10 @@ import { Router } from "express";
 import { register } from "../../../handlers/authHandlers";
 import { authLimiter } from "../../../middleware/rateLimiter";
 import { validateRequest } from "../../../middleware/validateRequest";
-import { UserCreateSchema, RegisterResponseSchema } from "../../../schemas/User.schema";
+import {
+	UserCreateSchema,
+	RegisterResponseSchema,
+} from "../../../schemas/User.schema";
 import { registry } from "../../../config/swagger";
 
 const router = Router();
@@ -39,6 +42,17 @@ registry.registerPath({
 	},
 });
 
-router.post("/", authLimiter, validateRequest(UserCreateSchema), register);
+router.post(
+	"/",
+	authLimiter,
+	validateRequest(UserCreateSchema),
+	async (req, res, next) => {
+		try {
+			await register(req, res, next);
+		} catch (error) {
+			next(error);
+		}
+	}
+);
 
 export default router;

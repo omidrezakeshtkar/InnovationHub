@@ -44,6 +44,12 @@ registry.registerPath({
 	},
 });
 
-router.post("/", refreshTokenLimiter, validateRequest(RefreshTokenRequestSchema), refreshToken);
+router.post("/", refreshTokenLimiter, validateRequest(RefreshTokenRequestSchema), async (req, res, next) => {
+	try {
+		await refreshToken(req, res, next);
+	} catch (error) {
+		next(error);
+	}
+});
 
 export default router;

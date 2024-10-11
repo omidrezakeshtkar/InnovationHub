@@ -28,6 +28,12 @@ registry.registerPath({
 	},
 });
 
-router.post("/", auth, logout);
+router.post("/", auth, async (req, res, next) => {
+	try {
+		await logout(req, res, next);
+	} catch (error) {
+		next(error);
+	}
+});
 
 export default router;
