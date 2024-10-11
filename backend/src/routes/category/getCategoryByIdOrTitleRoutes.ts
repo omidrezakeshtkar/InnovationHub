@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getCategories } from "../../handlers/categoryHandlers";
+import { getCategoryByIdOrTitle } from "../../handlers/categoryHandlers";
 import { auth } from "../../middleware/auth";
 import { registry } from "../../config/swagger";
 import { GlobalErrorSchema } from "../../schemas";
@@ -10,21 +10,28 @@ const router = Router();
 
 registry.registerPath({
 	method: "get",
-	path: "/categories",
-	summary: "Retrieve all categories",
+	path: "/categories/{identifier}",
+	summary: "Retrieve a category by its ID or title",
 	tags: ["Categories"],
 	security: [{ bearerAuth: [] }],
+	request: {
+		params: z.object({
+			identifier: z.string().openapi({
+				description: "The ID or title of the category to retrieve",
+			}),
+		}),
+	},
 	responses: {
 		200: {
-			description: "A list of categories",
+			description: "The category with the specified ID or title",
 			content: {
 				"application/json": {
-					schema: z.array(CategorySchema),
+					schema: CategorySchema,
 				},
 			},
 		},
-		401: {
-			description: "Unauthorized",
+		404: {
+			description: "Category not found",
 			content: {
 				"application/json": {
 					schema: GlobalErrorSchema,
@@ -34,6 +41,6 @@ registry.registerPath({
 	},
 });
 
-router.get("/", auth, getCategories);
+router.get("/:identifier", auth, getCategoryByIdOrTitle);
 
 export default router;

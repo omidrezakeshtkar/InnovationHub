@@ -1,29 +1,47 @@
-import { Router } from 'express';
-import { deleteCategory } from '../../handlers/categoryHandlers';
-import { auth } from '../../middleware/auth';
-import { authorize } from '../../middleware/authorize';
-import { PERMISSIONS } from '../../config/permissions';
+import { Router } from "express";
+import { deleteCategory } from "../../handlers/categoryHandlers";
+import { auth } from "../../middleware/auth";
+import { authorize } from "../../middleware/authorize";
+import { PERMISSIONS } from "../../config/permissions";
+import { registry } from "../../config/swagger";
+import { z } from "zod";
+import { GlobalErrorSchema } from "../../schemas";
 
 const router = Router();
 
-/**
- * @swagger
- * /categories/{id}:
- *   delete:
- *     summary: Delete a category (admin only)
- *     tags: [Categories]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Category deleted successfully
- */
-router.delete('/:id', auth, authorize(PERMISSIONS.MANAGE_CATEGORIES), deleteCategory);
+registry.registerPath({
+	method: "delete",
+	path: "/categories/{id}",
+	summary: "Delete a category by its ID",
+	tags: ["Categories"],
+	security: [{ bearerAuth: [] }],
+	request: {
+		params: z.object({
+			id: z
+				.string()
+				.openapi({ description: "The ID of the category to delete" }),
+		}),
+	},
+	responses: {
+		200: {
+			description: "Category deleted successfully",
+		},
+		404: {
+			description: "Category not found",
+			content: {
+				"application/json": {
+					schema: GlobalErrorSchema,
+				},
+			},
+		},
+	},
+});
+
+router.delete(
+	"/:id",
+	auth,
+	authorize(PERMISSIONS.MANAGE_CATEGORIES),
+	deleteCategory
+);
 
 export default router;
