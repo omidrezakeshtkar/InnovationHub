@@ -4,7 +4,7 @@ name: ideaexchange-dev
 
 services:
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile.dev
     ports:
@@ -15,6 +15,11 @@ services:
       - EMAIL_HOST=mailhog
       - EMAIL_PORT=1025
       - EMAIL_SECURE=false
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
     env_file:
       - ./backend/.env
     volumes:
@@ -24,6 +29,10 @@ services:
       mongodb:
         condition: service_healthy
       mailhog:
+        condition: service_started
+      redis:
+        condition: service_started
+      minio:
         condition: service_started
     networks:
       - app-network
@@ -43,6 +52,26 @@ services:
       timeout: 10s
       retries: 5
 
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  minio:
+    image: minio/minio
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app-network
+
   mailhog:
     image: mailhog/mailhog
     ports:
@@ -57,3 +86,4 @@ networks:
 
 volumes:
   mongodb_data:
+  minio_data:

@@ -12,8 +12,15 @@ services:
       - PORT=3000
       - DATABASE_URL=mongodb://mongodb:27017/ideaexchange
       - JWT_SECRET=your_jwt_secret_here
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
     depends_on:
       - mongodb
+      - redis
+      - minio
     networks:
       - app-network
 
@@ -26,9 +33,30 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  minio:
+    image: minio/minio
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
 
 volumes:
   mongodb_data:
+  minio_data:
