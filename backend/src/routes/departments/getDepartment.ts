@@ -1,45 +1,50 @@
-import { Request, Response } from 'express';
-import { Department } from '../../models/Department';
-import { auth } from '../../middleware/auth';
-import { authorize } from '../../middleware/authorize';
-import { PERMISSIONS } from '../../config/permissions';
+import { Router } from "express";
+import { getDepartmentById } from "../../handlers/departmentHandlers";
+import { auth } from "../../middleware/auth";
+import { registry } from "../../config/swagger";
+import { GlobalErrorSchema } from "../../schemas";
+import {
+	DepartmentSchema,
+	DepartmentIdSchema,
+} from "../../schemas/Department.schema";
+import { validateRequest } from "../../middleware/validateRequest";
 
-/**
- * @swagger
- * /departments/{id}:
- *   get:
- *     summary: Get a department by id
- *     tags: [Departments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: The department
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Department'
- *       404:
- *         description: Department not found
- */
-export const getDepartmentRoute = [
-  auth,
-  authorize(PERMISSIONS.VIEW_DEPARTMENT),
-  async (req: Request, res: Response) => {
-    try {
-      const department = await Department.findById(req.params.id);
-      if (!department) {
-        return res.status(404).json({ message: 'Department not found' });
-      }
-      res.json(department);
-    } catch (error) {
-      res.status(500).json({ message: 'Error retrieving department', error });
-    }
-  }
-];
+const router = Router();
+
+registry.registerPath({
+	method: "get",
+	path: "/departments/{id}",
+	summary: "Retrieve a department by its ID",
+	tags: ["Departments"],
+	security: [{ bearerAuth: [] }],
+	request: {
+		params: DepartmentIdSchema.shape.params,
+	},
+	responses: {
+		200: {
+			description: "The department with the specified ID",
+			content: {
+				"application/json": {
+					schema: DepartmentSchema,
+				},
+			},
+		},
+		404: {
+			description: "Department not found",
+			content: {
+				"application/json": {
+					schema: GlobalErrorSchema,
+				},
+			},
+		},
+	},
+});
+
+router.get(
+	"/:id",
+	auth,
+	validateRequest(DepartmentIdSchema),
+	getDepartmentById
+);
+
+export default router;

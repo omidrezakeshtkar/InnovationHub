@@ -1,27 +1,39 @@
-import { Request, Response } from "express";
-import { Department } from "../../models/Department";
+import { Router } from "express";
+import { getDepartments } from "../../handlers/departmentHandlers";
+import { auth } from "../../middleware/auth";
+import { registry } from "../../config/swagger";
+import { GlobalErrorSchema } from "../../schemas";
+import { DepartmentSchema } from "../../schemas/Department.schema";
+import { z } from "zod";
 
-/**
- * @swagger
- * /departments:
- *   get:
- *     summary: Retrieve all departments
- *     tags: [Departments]
- *     responses:
- *       200:
- *         description: A list of departments
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Department'
- */
-export const getDepartmentsRoute = async (req: Request, res: Response) => {
-	try {
-		const departments = await Department.find();
-		res.json(departments);
-	} catch (error) {
-		res.status(500).json({ message: "Error retrieving departments", error });
-	}
-};
+const router = Router();
+
+registry.registerPath({
+	method: "get",
+	path: "/departments",
+	summary: "Retrieve all departments",
+	tags: ["Departments"],
+	security: [{ bearerAuth: [] }],
+	responses: {
+		200: {
+			description: "A list of departments",
+			content: {
+				"application/json": {
+					schema: z.array(DepartmentSchema),
+				},
+			},
+		},
+		401: {
+			description: "Unauthorized",
+			content: {
+				"application/json": {
+					schema: GlobalErrorSchema,
+				},
+			},
+		},
+	},
+});
+
+router.get("/", auth, getDepartments);
+
+export default router;

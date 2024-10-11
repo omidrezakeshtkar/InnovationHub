@@ -1,17 +1,17 @@
-import { Router } from 'express';
-import { createDepartment, getAllDepartments, getDepartmentById, updateDepartment, deleteDepartment } from '../../handlers/departmentHandlers';
-import { auth } from '../../middleware/auth';
-import { authorize } from '../../middleware/authorize';
-import { PERMISSIONS } from '../../config/permissions';
-import { validateRequest } from '../../middleware/validateRequest';
-import { schemas } from '../../validation/schemas';
+import { Router } from "express";
+import createDepartmentRoutes from "./createDepartment";
+import updateDepartmentRoutes from "./updateDepartment";
+import getDepartmentsRoutes from "./getDepartments";
+import getDepartmentByIdRoutes from "./getDepartment";
+import deleteDepartmentRoutes from "./deleteDepartment";
 
 const router = Router();
 
-router.post('/', auth, authorize(PERMISSIONS.MANAGE_DEPARTMENTS), validateRequest(schemas.department.create), createDepartment);
-router.get('/', getAllDepartments);
-router.get('/:id', validateRequest(schemas.department.getById), getDepartmentById);
-router.put('/:id', auth, authorize(PERMISSIONS.MANAGE_DEPARTMENTS), validateRequest(schemas.department.update), updateDepartment);
-router.delete('/:id', auth, authorize(PERMISSIONS.MANAGE_DEPARTMENTS), validateRequest(schemas.department.delete), deleteDepartment);
+// Use the department routes
+router.use("/", createDepartmentRoutes);
+router.use("/", updateDepartmentRoutes);
+router.use("/", getDepartmentsRoutes);
+router.use("/", getDepartmentByIdRoutes);
+router.use("/", deleteDepartmentRoutes);
 
 export default router;
