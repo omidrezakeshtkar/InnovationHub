@@ -1,37 +1,44 @@
 import { Router } from "express";
-import { login } from "../../../handlers/authHandlers"; // Adjusted import path
-import { authLimiter } from "../../../middleware/rateLimiter"; // Adjusted import path
-import { validateRequest } from "../../../middleware/validateRequest"; // Adjusted import path
-import { schemas } from "../../../validation/schemas"; // Updated import
+import { login } from "../../../handlers/authHandlers";
+import { validateRequest } from "../../../middleware/validateRequest";
+import { authLimiter } from "../../../middleware/rateLimiter";
+import { LoginRequestSchema, LoginResponseSchema } from "../../../schemas/User.schema";
+import { registry } from "../../../config/swagger";
 
 const router = Router();
 
-/**
- * @swagger
- * /user/auth/login:
- *   post:
- *     summary: Login a user
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Successful login
- *       400:
- *         description: Invalid credentials
- */
-router.post("/login", authLimiter, validateRequest(schemas.user.login), login);
+registry.registerPath({
+	method: "post",
+	path: "/user/auth/login",
+	summary: "User login",
+	tags: ["Auth"],
+	request: {
+		body: {
+			content: {
+				"application/json": {
+					schema: LoginRequestSchema.shape.body,
+				},
+			},
+		},
+	},
+	responses: {
+		200: {
+			description: "User logged in successfully",
+			content: {
+				"application/json": {
+					schema: LoginResponseSchema,
+				},
+			},
+		},
+		400: {
+			description: "Invalid request data",
+		},
+		401: {
+			description: "Invalid credentials",
+		},
+	},
+});
+
+router.post("/", authLimiter, validateRequest(LoginRequestSchema), login);
 
 export default router;

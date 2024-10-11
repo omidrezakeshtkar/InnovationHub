@@ -2,53 +2,43 @@ import { Router } from "express";
 import { register } from "../../../handlers/authHandlers";
 import { authLimiter } from "../../../middleware/rateLimiter";
 import { validateRequest } from "../../../middleware/validateRequest";
-import { schemas } from "../../../validation/schemas"; // Updated import
+import { UserCreateSchema, RegisterResponseSchema } from "../../../schemas/User.schema";
+import { registry } from "../../../config/swagger";
 
 const router = Router();
 
-/**
- * @swagger
- * /user/auth/register:
- *   post:
- *     summary: Register a new user
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *               - password
- *               - role
- *               - department
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *               role:
- *                 type: string
- *                 enum: [user, moderator, admin, department_head]
- *               department:
- *                 type: string
- *     responses:
- *       201:
- *         description: Successful registration
- *       400:
- *         description: Bad request
- */
-router.post(
-	"/register",
-	authLimiter,
-	validateRequest(schemas.user.register),
-	register
-);
+registry.registerPath({
+	method: "post",
+	path: "/user/auth/register",
+	summary: "Register a new user",
+	tags: ["Auth"],
+	request: {
+		body: {
+			content: {
+				"application/json": {
+					schema: UserCreateSchema.shape.body,
+				},
+			},
+		},
+	},
+	responses: {
+		201: {
+			description: "User registered successfully",
+			content: {
+				"application/json": {
+					schema: RegisterResponseSchema,
+				},
+			},
+		},
+		400: {
+			description: "Bad request",
+		},
+		429: {
+			description: "Too many requests",
+		},
+	},
+});
+
+router.post("/", authLimiter, validateRequest(UserCreateSchema), register);
 
 export default router;
