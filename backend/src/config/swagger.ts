@@ -1,67 +1,61 @@
-import swaggerJsdoc from "swagger-jsdoc";
+import {
+	OpenApiGeneratorV3,
+	OpenAPIRegistry,
+} from "@asteasolutions/zod-to-openapi";
 import { SwaggerOptions } from "swagger-ui-express";
-import path from "path";
-import config from "./index";
+import * as schemas from "../schemas";
 
-const options: swaggerJsdoc.Options = {
-	definition: {
+export const registry = new OpenAPIRegistry();
+
+// Register all schemas
+Object.entries(schemas).forEach(([name, schema]) => {
+	if (typeof schema === "object" && "shape" in schema) {
+		registry.register(name, schema);
+	}
+});
+
+export const generateOpenApiDocument = () => {
+	const generator = new OpenApiGeneratorV3(registry.definitions);
+
+	return generator.generateDocument({
 		openapi: "3.0.0",
 		info: {
 			title: "IdeaExchange API",
 			version: "1.0.0",
-			description: "API documentation for the IdeaExchange platform",
+			description: "API for IdeaExchange platform",
 		},
 		servers: [
 			{
-				url: `${config.websiteUrl}/api`,
-				description:
-					config.nodeEnv === "development"
-						? "Development server"
-						: "Production server",
+				url: "http://localhost:3000/api", // Update this to your server URL
 			},
 		],
-	},
-	apis: [
-		path.resolve(__dirname, "../routes/**/*.ts"),
-		path.resolve(__dirname, "../models/*.ts"),
-	],
+		security: [
+			{
+				bearerAuth: [],
+			},
+		],
+	});
 };
 
-console.log("Generating Swagger specification...");
-export const swaggerSpec = swaggerJsdoc(options);
-console.log("Swagger specification generated successfully.");
-console.log("Swagger spec:", JSON.stringify(swaggerSpec, null, 2));
-
 export const swaggerUiOptions: SwaggerOptions = {
-	explorer: true,
 	swaggerOptions: {
 		url: "/api-docs.json",
 	},
 	customCss: ".swagger-ui .topbar { display: none }",
 };
-console.log("Swagger UI options set.");
 
-const swaggerOptions = {
-	swaggerDefinition: {
-		openapi: "3.0.0",
-		info: {
-			title: "API Documentation",
-			version: "1.0.0",
-		},
-		servers: [
-			{
-				url: "http://localhost:3000/api",
-			},
-		],
-		components: {
-			securitySchemes: {
-				bearerAuth: {
-					type: "http",
-					scheme: "bearer",
-					bearerFormat: "JWT",
-				},
-			},
-		},
-	},
-	apis: ["./src/routes/**/*.ts"], // Ensure this path is correct
+// Function to setup Swagger UI
+export const setupSwagger = (app: any) => {
+	const swaggerUi = require("swagger-ui-express");
+	const openApiDocument = generateOpenApiDocument();
+
+	app.use(
+		"/api-docs",
+		swaggerUi.serve,
+		swaggerUi.setup(openApiDocument, swaggerUiOptions)
+	);
+	app.get("/api-docs.json", (req: any, res: any) => {
+		res.setHeader("Content-Type", "application/json");
+		res.send(openApiDocument);
+	});
 };
