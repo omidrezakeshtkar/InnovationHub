@@ -1,37 +1,41 @@
 import { Request, Response, NextFunction } from 'express';
+import { CustomError } from '../utils/CustomError';
 import logger from '../utils/logger';
-import Joi from 'joi';
 
-export class AppError extends Error {
+export class AppError extends CustomError {
   statusCode: number;
-  isOperational: boolean;
 
   constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;
-    this.isOperational = true;
-    Error.captureStackTrace(this, this.constructor);
   }
 }
 
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+  let statusCode = 500;
+  let errorMessage = 'Internal Server Error';
+
   if (err instanceof AppError) {
-    logger.error(`${err.statusCode} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
-    return res.status(err.statusCode).json({
-      message: err.message
+    statusCode = err.statusCode;
+    errorMessage = err.message;
+  } else if (err instanceof CustomError) {
+    statusCode = 400;
+    errorMessage = err.message;
+  }
+
+  // Log the error with stack trace
+  logger.error(`${err.name}: ${err.message}\n${err.stack}`);
+
+  // In development, send the error details including the stack trace
+  if (process.env.NODE_ENV === 'development') {
+    return res.status(statusCode).json({
+      error: {
+        message: errorMessage,
+        stack: err.stack,
+      },
     });
   }
 
-  if (err instanceof Joi.ValidationError) {
-    logger.error(`400 - Validation Error: ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
-    return res.status(400).json({
-      message: 'Validation Error',
-      details: err.details.map(detail => detail.message)
-    });
-  }
-
-  logger.error(`500 - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
-  res.status(500).json({
-    message: 'An unexpected error occurred'
-  });
+  // In production, send a generic error message
+  res.status(statusCode).json({ error: errorMessage });
 };
