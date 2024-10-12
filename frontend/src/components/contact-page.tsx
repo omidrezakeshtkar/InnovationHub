@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import branding from '../branding.json';
 
 export function ContactPageComponent() {
+    const primaryColor = branding.primaryColor || 'var(--primary)';
+    const secondaryColor = branding.secondaryColor || 'var(--secondary)';
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
@@ -66,7 +69,8 @@ export function ContactPageComponent() {
                     </div>
                     <div className="flex items-center justify-between">
                         <button
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            style={{backgroundColor: primaryColor, ':hover': {filter: 'brightness(90%)'}}}
                             type="submit"
                         >
                             Send Message

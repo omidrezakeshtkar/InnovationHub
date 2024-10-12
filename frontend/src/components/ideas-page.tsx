@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Lightbulb } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import branding from '../branding.json';
 
 const featuredIdeas = [
 	{
@@ -43,6 +44,8 @@ const categories = [
 ];
 
 export function IdeasPageComponent() {
+	const primaryColor = branding.primaryColor || 'var(--primary)';
+	const secondaryColor = branding.secondaryColor || 'var(--secondary)';
 	const [searchTerm, setSearchTerm] = useState("");
 
 	return (
@@ -55,7 +58,8 @@ export function IdeasPageComponent() {
 					<input
 						type="text"
 						placeholder="Search for ideas"
-						className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
+						className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+						style={{':focus': {borderColor: primaryColor, boxShadow: `0 0 0 2px ${primaryColor}30`}}}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
 					/>
@@ -72,7 +76,7 @@ export function IdeasPageComponent() {
 									<div className="p-6">
 										<h3 className="text-xl font-semibold text-gray-800 mb-2">{idea.title}</h3>
 										<p className="text-gray-600 mb-4">{idea.description}</p>
-										<button className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition duration-300">
+										<button className="text-white px-4 py-2 rounded-md transition duration-300" style={{backgroundColor: primaryColor, ':hover': {filter: 'brightness(90%)'}}}>
 											View details
 										</button>
 									</div>
@@ -89,7 +93,7 @@ export function IdeasPageComponent() {
 							{recentIdeas.map((idea, index) => (
 								<div key={index} className="bg-gray-800 text-white p-4 rounded-lg flex justify-between items-center">
 									<div className="flex items-center">
-										<Lightbulb className="mr-3" size={24} />
+										<Lightbulb className="mr-3" size={24} style={{color: primaryColor}} />
 										<div>
 											<h3 className="font-semibold">{idea.title}</h3>
 											<p className="text-sm text-gray-400">{idea.days} days ago • {idea.votes} votes</p>

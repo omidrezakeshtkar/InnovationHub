@@ -1,6 +1,10 @@
 import React from 'react';
+import branding from '../branding.json';
 
 export function TermsOfServiceComponent() {
+    const primaryColor = branding.primaryColor || 'var(--primary)';
+    const secondaryColor = branding.secondaryColor || 'var(--secondary)';
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-16 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">

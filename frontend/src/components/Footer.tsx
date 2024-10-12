@@ -1,12 +1,16 @@
 import { Link } from "react-router-dom";
+import branding from '../branding.json';
 
 export function Footer() {
+	const primaryColor = branding.primaryColor || 'var(--primary)';
+	const secondaryColor = branding.secondaryColor || 'var(--secondary)';
+
 	return (
 		<footer className="bg-gray-800 text-white py-12 w-full">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="grid grid-cols-1 md:grid-cols-4 gap-8">
 					<div>
-						<h3 className="text-xl font-semibold mb-4">IdeaExchange</h3>
+						<h3 className="text-xl font-semibold mb-4">{branding.projectName}</h3>
 						<p className="text-gray-400">Empowering innovators worldwide</p>
 					</div>
 					<div>
@@ -86,11 +90,12 @@ export function Footer() {
 							<input
 								type="email"
 								placeholder="Your email"
-								className="bg-gray-700 text-white px-2 py-1 rounded-t-md sm:rounded-l-md sm:rounded-t-none focus:outline-none focus:ring-2 focus:ring-purple-600"
+								className="bg-gray-700 text-white px-2 py-1 rounded-t-md sm:rounded-l-md sm:rounded-t-none focus:outline-none focus:ring-2 focus:ring-{primaryColor} focus:ring-opacity-50"
 							/>
 							<button
 								type="submit"
-								className="bg-purple-600 text-white px-2 py-1 rounded-b-md sm:rounded-r-md sm:rounded-b-none hover:bg-purple-700 transition duration-300"
+								className="text-white px-2 py-1 rounded-b-md sm:rounded-r-md sm:rounded-b-none transition duration-300"
+								style={{backgroundColor: primaryColor, ':hover': {filter: 'brightness(90%)'}}}
 							>
 								Subscribe
 							</button>
@@ -98,7 +103,8 @@ export function Footer() {
 					</div>
 				</div>
 				<div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
-					<p>&copy; 2024 IdeaExchange. All rights reserved.</p>
+					<p>&copy; {new Date().getFullYear()} {branding.companyName}. All rights reserved.</p>
+					<p className="mt-2">Powered by IdeaExchange</p>
 				</div>
 			</div>
 		</footer>

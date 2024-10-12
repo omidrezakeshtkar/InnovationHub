@@ -1,7 +1,11 @@
 import { ChevronRight, Star, Users, Lightbulb, ArrowUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import branding from '../branding.json';
 
 export function LandingPageComponent() {
+	const primaryColor = branding.primaryColor || 'var(--primary)';
+	const secondaryColor = branding.secondaryColor || 'var(--secondary)';
+
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
 			<main>
@@ -15,7 +19,7 @@ export function LandingPageComponent() {
 						IdeaExchange is the platform where great minds connect and create
 						the future.
 					</p>
-					<button className="btn bg-purple-600 text-white px-8 py-3 text-lg font-semibold hover:bg-purple-700 transition duration-300">
+					<button className="btn text-white px-8 py-3 text-lg font-semibold transition duration-300" style={{backgroundColor: primaryColor, ':hover': {filter: 'brightness(90%)'}}}>
 						Get Started
 					</button>
 				</section>
@@ -54,7 +58,7 @@ export function LandingPageComponent() {
 									{idea.title}
 								</h3>
 								<p className="text-gray-600 mb-4">{idea.description}</p>
-								<div className="flex items-center text-purple-600">
+								<div className="flex items-center" style={{color: primaryColor}}>
 									<ArrowUp size={20} />
 									<span className="ml-1 font-semibold">{idea.upvotes}</span>
 								</div>
@@ -79,8 +83,9 @@ export function LandingPageComponent() {
 						].map((category, index) => (
 							<button
 								key={index}
-								className="btn bg-white text-purple-600 px-6 py-3 shadow-md hover:shadow-lg transition duration-300"
-								>
+								className="btn bg-white px-6 py-3 shadow-md hover:shadow-lg transition duration-300"
+								style={{color: primaryColor, ':hover': {color: secondaryColor}}}
+							>
 								{category}
 							</button>
 						))}
@@ -100,7 +105,7 @@ export function LandingPageComponent() {
 							{ icon: Star, label: "Ideas Implemented", value: "5,000+" },
 						].map((stat, index) => (
 							<div key={index} className="flex flex-col items-center">
-								<stat.icon size={48} className="text-purple-600 mb-4" />
+								<stat.icon size={48} style={{color: primaryColor}} className="mb-4" />
 								<span className="text-4xl font-bold text-gray-800 mb-2">
 									{stat.value}
 								</span>

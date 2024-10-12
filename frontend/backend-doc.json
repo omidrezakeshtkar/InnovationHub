@@ -1,0 +1,891 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "IdeaExchange API",
+		"version": "1.0.0",
+		"description": "API for IdeaExchange platform"
+	},
+	"servers": [{ "url": "http://localhost:3000/api" }],
+	"components": {
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		},
+		"schemas": {
+			"User": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": { "type": "string" },
+					"email": { "type": "string" },
+					"role": {
+						"type": "string",
+						"enum": ["user", "moderator", "admin", "department_head"]
+					},
+					"department": { "type": "string" },
+					"createdAt": { "type": "string", "format": "date-time" },
+					"updatedAt": { "type": "string", "format": "date-time" }
+				}
+			},
+			"UpdateUserProfile": {
+				"type": "object",
+				"properties": {
+					"name": { "type": "string" },
+					"email": { "type": "string" }
+				}
+			}
+		}
+	},
+	"security": [{ "bearerAuth": [] }],
+	"paths": {
+		"/analytics": {
+			"get": {
+				"summary": "Get analytics data",
+				"tags": ["Analytics"],
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "Analytics data",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"overallStats": { "type": "object" },
+										"topCategories": { "type": "array" },
+										"userEngagement": { "type": "object" },
+										"ideaTrends": { "type": "array" }
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/analytics/categories": {
+			"get": {
+				"summary": "Get category analytics",
+				"tags": ["Analytics"],
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "Category analytics data",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"categoryStats": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"category": { "type": "string" },
+													"ideasSubmitted": { "type": "number" }
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/analytics/idea-trends": {
+			"get": {
+				"summary": "Get idea trends analytics",
+				"tags": ["Analytics"],
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "Idea trends analytics data",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"trendingIdeas": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"title": { "type": "string" },
+													"votes": { "type": "number" }
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/analytics/overall": {
+			"get": {
+				"summary": "Get overall analytics data",
+				"tags": ["Analytics"],
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "Overall analytics data",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"totalIdeas": { "type": "number" },
+										"totalUsers": { "type": "number" },
+										"totalVotes": { "type": "number" }
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/analytics/user-engagement": {
+			"get": {
+				"summary": "Get user engagement analytics",
+				"tags": ["Analytics"],
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "User engagement analytics data",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"activeUsers": { "type": "number" },
+										"engagementRate": { "type": "number" }
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/badges": {
+			"post": {
+				"summary": "Create a new badge (admin only)",
+				"tags": ["Badges"],
+				"security": [{ "bearerAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/NewBadge" }
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Created badge",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Badge" }
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"summary": "Get all badges",
+				"tags": ["Badges"],
+				"responses": {
+					"200": {
+						"description": "List of all badges",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": { "$ref": "#/components/schemas/Badge" }
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/badges/{id}": {
+			"delete": {
+				"summary": "Delete a badge (admin only)",
+				"tags": ["Badges"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": { "200": { "description": "Badge deleted successfully" } }
+			},
+			"put": {
+				"summary": "Update a badge (admin only)",
+				"tags": ["Badges"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/UpdateBadge" }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Updated badge",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Badge" }
+							}
+						}
+					}
+				}
+			}
+		},
+		"/categories": {
+			"post": {
+				"summary": "Create a new category (admin only)",
+				"tags": ["Categories"],
+				"security": [{ "bearerAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/NewCategory" }
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Created category",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Category" }
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"summary": "Get all categories with optional search",
+				"tags": ["Categories"],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": { "type": "string" },
+						"description": "Search term to filter categories by name"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "List of all categories",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": { "$ref": "#/components/schemas/Category" }
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/categories/{id}": {
+			"delete": {
+				"summary": "Delete a category (admin only)",
+				"tags": ["Categories"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Category deleted successfully" }
+				}
+			},
+			"put": {
+				"summary": "Update a category (admin only)",
+				"tags": ["Categories"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/UpdateCategory" }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Updated category",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Category" }
+							}
+						}
+					}
+				}
+			}
+		},
+		"/departments": {
+			"post": {
+				"summary": "Create a new department",
+				"tags": ["Departments"],
+				"security": [{ "bearerAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/NewDepartment" }
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "The created department",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Department" }
+							}
+						}
+					},
+					"400": { "description": "Error creating department" }
+				}
+			},
+			"get": {
+				"summary": "Retrieve all departments",
+				"tags": ["Departments"],
+				"responses": {
+					"200": {
+						"description": "A list of departments",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": { "$ref": "#/components/schemas/Department" }
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/departments/{id}": {
+			"delete": {
+				"summary": "Delete a department",
+				"tags": ["Departments"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Department deleted successfully" },
+					"404": { "description": "Department not found" }
+				}
+			},
+			"get": {
+				"summary": "Get a department by id",
+				"tags": ["Departments"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "The department",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Department" }
+							}
+						}
+					},
+					"404": { "description": "Department not found" }
+				}
+			},
+			"put": {
+				"summary": "Update a department",
+				"tags": ["Departments"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/UpdateDepartment" }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The updated department",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Department" }
+							}
+						}
+					},
+					"404": { "description": "Department not found" }
+				}
+			}
+		},
+		"/ideas/{id}/comment": {
+			"post": {
+				"summary": "Add a comment to an idea",
+				"tags": ["Ideas"],
+				"security": [{ "bearerAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/models/Comment" }
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Comment added successfully",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/models/Comment" }
+							}
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Error" }
+							}
+						}
+					}
+				}
+			}
+		},
+		"/ideas/{id}/approve": {
+			"post": {
+				"summary": "Approve an idea",
+				"tags": ["Ideas"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"description": "The ID of the idea to approve",
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Idea approved successfully" },
+					"403": { "description": "Unauthorized to approve idea" },
+					"404": { "description": "Idea not found" }
+				}
+			}
+		},
+		"/ideas": {
+			"post": {
+				"summary": "Create a new idea",
+				"tags": ["Ideas"],
+				"security": [{ "bearerAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/NewIdea" }
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Created idea",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Idea" }
+							}
+						}
+					},
+					"400": { "description": "Bad request" },
+					"401": { "description": "Unauthorized" },
+					"403": { "description": "Forbidden" }
+				}
+			},
+			"get": {
+				"summary": "Retrieve all ideas",
+				"tags": ["Ideas"],
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "A list of ideas",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": { "$ref": "#/components/schemas/Idea" }
+								}
+							}
+						}
+					},
+					"401": { "description": "Unauthorized" },
+					"403": { "description": "Forbidden" }
+				}
+			}
+		},
+		"/ideas/{id}": {
+			"delete": {
+				"summary": "Delete an idea by its ID",
+				"tags": ["Ideas"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"description": "The ID of the idea to delete",
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "The idea with the specified ID has been deleted"
+					},
+					"404": {
+						"description": "The idea with the specified ID was not found"
+					}
+				}
+			},
+			"get": {
+				"summary": "Retrieve an idea by its ID",
+				"tags": ["Ideas"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"description": "The ID of the idea to retrieve",
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "The idea with the specified ID",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Idea" }
+							}
+						}
+					},
+					"404": {
+						"description": "Idea not found",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Error" }
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"summary": "Update an idea by its ID",
+				"tags": ["Ideas"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"description": "The ID of the idea to update",
+						"schema": { "type": "string" }
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/IdeaUpdate" }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The idea with the specified ID has been updated",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Idea" }
+							}
+						}
+					},
+					"400": { "description": "Bad request" },
+					"404": {
+						"description": "Idea not found",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Error" }
+							}
+						}
+					}
+				}
+			}
+		},
+		"/ideas/{id}/versions": {
+			"get": {
+				"summary": "Retrieve all versions of an idea",
+				"tags": ["Ideas"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"description": "The ID of the idea to retrieve its versions",
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "A list of idea versions",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": { "$ref": "#/components/schemas/IdeaVersion" }
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Idea not found",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Error" }
+							}
+						}
+					}
+				}
+			}
+		},
+		"/ideas/{id}/vote": {
+			"post": {
+				"summary": "Vote for an idea",
+				"tags": ["Ideas"],
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"description": "The ID of the idea to vote for",
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Vote successfully cast",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"message": {
+											"type": "string",
+											"description": "Success message"
+										}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/Error" }
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/auth/login": {
+			"post": {
+				"summary": "Login a user",
+				"tags": ["Auth"],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["email", "password"],
+								"properties": {
+									"email": { "type": "string" },
+									"password": { "type": "string" }
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": { "description": "Successful login" },
+					"400": { "description": "Invalid credentials" }
+				}
+			}
+		},
+		"/user/auth/logout": {
+			"post": {
+				"summary": "Logout a user",
+				"tags": ["Auth"],
+				"responses": { "200": { "description": "Successful logout" } }
+			}
+		},
+		"/user/auth/refresh-token": {
+			"post": {
+				"summary": "Refresh user token",
+				"tags": ["Auth"],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["refreshToken"],
+								"properties": { "refreshToken": { "type": "string" } }
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": { "description": "Token refreshed successfully" },
+					"401": { "description": "Invalid refresh token" }
+				}
+			}
+		},
+		"/user/auth/register": {
+			"post": {
+				"summary": "Register a new user",
+				"tags": ["Auth"],
+				"security": [{ "bearerAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["name", "email", "password", "role", "department"],
+								"properties": {
+									"name": { "type": "string" },
+									"email": { "type": "string" },
+									"password": { "type": "string" },
+									"role": {
+										"type": "string",
+										"enum": ["user", "moderator", "admin", "department_head"]
+									},
+									"department": { "type": "string" }
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": { "description": "Successful registration" },
+					"400": { "description": "Bad request" }
+				}
+			}
+		},
+		"/user/profile": {
+			"get": {
+				"summary": "Get user profile",
+				"tags": ["User"],
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "User profile",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/User" }
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"summary": "Update user profile",
+				"tags": ["User"],
+				"security": [{ "bearerAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/UpdateUserProfile" }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Updated user profile",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/User" }
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"tags": []
+}
