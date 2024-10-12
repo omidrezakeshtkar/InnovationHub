@@ -76,14 +76,22 @@ export const deleteCategory = async (
 	try {
 		const { id } = req.params;
 
-		const category = await Category.findByIdAndDelete(id);
+		const category = await Category.findById(id);
 
 		if (!category) {
 			return next(new AppError("Category not found", 404));
 		}
 
+		// Delete all ideas related to this category
+		await Idea.deleteMany({ category: id });
+
+		// Delete the category
+		await Category.findByIdAndDelete(id);
+
 		logger.info(`Category deleted: ${id}`);
-		res.status(200).json({ message: "Category deleted successfully" });
+		res
+			.status(200)
+			.json({ message: "Category and related ideas deleted successfully" });
 	} catch (error) {
 		logger.error("Error deleting category:", error);
 		return next(new AppError("Error deleting category", 500));

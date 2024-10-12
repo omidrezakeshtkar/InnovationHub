@@ -8,21 +8,25 @@ const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement
 );
 root.render(
-	<React.StrictMode>
-		<BrowserRouter>
-			<App />
-		</BrowserRouter>
-	</React.StrictMode>
+	// <React.StrictMode>
+	<BrowserRouter>
+		<App />
+	</BrowserRouter>
+	// </React.StrictMode>
 );
 
-if ('serviceWorker' in navigator) {
-	window.addEventListener('load', () => {
-		navigator.serviceWorker.register('/service-worker.js')
+if ("serviceWorker" in navigator) {
+	window.addEventListener("load", () => {
+		navigator.serviceWorker
+			.register("/service-worker.js")
 			.then((registration) => {
-				console.log('Service Worker registered with scope:', registration.scope);
+				console.log(
+					"Service Worker registered with scope:",
+					registration.scope
+				);
 			})
 			.catch((error) => {
-				console.error('Service Worker registration failed:', error);
+				console.error("Service Worker registration failed:", error);
 			});
 	});
 }

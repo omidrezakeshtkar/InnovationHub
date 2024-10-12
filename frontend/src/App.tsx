@@ -69,7 +69,12 @@ function App() {
 						<Route path="/" element={<LandingPageComponent />} />
 						<Route path="/ideas" element={<IdeasPageComponent />} />
 						<Route path="/ideas/:id" element={<IdeaDetailComponent />} />
-						<Route path="/categories" element={<CategoriesPageComponent />} />
+						<Route
+							path="/categories"
+							element={
+								<CategoriesPageComponent showNotification={showNotification} />
+							}
+						/>
 						<Route path="/about" element={<AboutPageComponent />} />
 						<Route path="/contact" element={<ContactPageComponent />} />
 						<Route path="/privacy" element={<PrivacyPolicyComponent />} />
