@@ -51,6 +51,18 @@ registry.registerPath({
 	},
 });
 
-router.put("/", auth, validateRequest(UserUpdateSchema), updateUserProfile);
+router.put(
+	"/",
+	auth,
+	validateRequest(UserUpdateSchema), // Ensure UserUpdateSchema is a valid Zod schema
+	async (req, res, next) => {
+		try {
+			await updateUserProfile(req, res, next);
+		} catch (error) {
+			console.error("Error in updateUserProfile route:", error);
+			next(error);
+		}
+	}
+);
 
 export default router;

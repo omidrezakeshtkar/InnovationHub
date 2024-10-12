@@ -50,6 +50,7 @@ router.post(
 		try {
 			await register(req, res, next);
 		} catch (error) {
+			console.error("Error in register route:", error);
 			next(error);
 		}
 	}

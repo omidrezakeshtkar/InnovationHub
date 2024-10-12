@@ -1,17 +1,17 @@
 import { Router } from "express";
-import createCategoryRoutes from "./createCategoryRoutes";
-import updateCategoryRoutes from "./updateCategoryRoutes";
-import getCategoriesRoutes from "./getCategoriesRoutes";
-import getCategoryByIdOrTitleRoutes from "./getCategoryByIdOrTitleRoutes";
-import deleteCategoryRoutes from "./deleteCategoryRoutes";
+import createCategoryRoute from "./createCategoryRoute";
+import updateCategoryRoute from "./updateCategoryRoute";
+import getCategoriesRoute from "./getCategoriesRoute";
+import getCategoryByIdOrNameRoute from "./getCategoryByIdOrNameRoute";
+import deleteCategoryRoute from "./deleteCategoryRoute";
 
 const router = Router();
 
-// Use the category routes
-router.use("/", createCategoryRoutes);
-router.use("/", updateCategoryRoutes);
-router.use("/", getCategoriesRoutes);
-router.use("/", getCategoryByIdOrTitleRoutes);
-router.use("/", deleteCategoryRoutes);
+// Use the category route
+router.use("/", createCategoryRoute);
+router.use("/", updateCategoryRoute);
+router.use("/", getCategoriesRoute);
+router.use("/", getCategoryByIdOrNameRoute);
+router.use("/", deleteCategoryRoute);
 
 export default router;

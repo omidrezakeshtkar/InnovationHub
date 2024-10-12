@@ -1,7 +1,13 @@
 import { Router } from "express";
-import { refreshToken, refreshTokenLimiter } from "../../../handlers/authHandlers";
+import {
+	refreshToken,
+	refreshTokenLimiter,
+} from "../../../handlers/authHandlers";
 import { validateRequest } from "../../../middleware/validateRequest";
-import { RefreshTokenRequestSchema, RefreshTokenResponseSchema } from "../../../schemas/User.schema";
+import {
+	RefreshTokenRequestSchema,
+	RefreshTokenResponseSchema,
+} from "../../../schemas/User.schema";
 import { registry } from "../../../config/swagger";
 
 const router = Router();
@@ -44,12 +50,18 @@ registry.registerPath({
 	},
 });
 
-router.post("/", refreshTokenLimiter, validateRequest(RefreshTokenRequestSchema), async (req, res, next) => {
-	try {
-		await refreshToken(req, res, next);
-	} catch (error) {
-		next(error);
+router.post(
+	"/",
+	refreshTokenLimiter,
+	validateRequest(RefreshTokenRequestSchema),
+	async (req, res, next) => {
+		try {
+			await refreshToken(req, res, next);
+		} catch (error) {
+			console.error("Error in refreshToken route:", error);
+			next(error);
+		}
 	}
-});
+);
 
 export default router;

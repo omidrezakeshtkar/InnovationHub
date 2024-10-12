@@ -3,7 +3,8 @@ import { getUserProfile } from "../../../handlers/userHandlers";
 import { auth } from "../../../middleware/auth";
 import { registry } from "../../../config/swagger";
 import { GlobalErrorSchema } from "../../../schemas";
-import { UserSchema } from "../../../schemas/User.schema";
+import { GetUserSchema, UserSchema } from "../../../schemas/User.schema";
+import { validateRequest } from "../../../middleware/validateRequest";
 
 const router = Router();
 
@@ -30,9 +31,29 @@ registry.registerPath({
 				},
 			},
 		},
+		500: {
+			description: "Internal Server Error",
+			content: {
+				"application/json": {
+					schema: GlobalErrorSchema,
+				},
+			},
+		},
 	},
 });
 
-router.get("/", auth, getUserProfile);
+router.get(
+	"/",
+	auth,
+	validateRequest(GetUserSchema),
+	async (req, res, next) => {
+		try {
+			await getUserProfile(req, res, next);
+		} catch (error) {
+			console.error("Error in getUserProfile route:", error);
+			next(error);
+		}
+	}
+);
 
 export default router;

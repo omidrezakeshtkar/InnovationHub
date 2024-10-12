@@ -1,25 +1,24 @@
 import { Router } from "express";
-import { getDepartments } from "../../handlers/departmentHandlers";
+import { getIdeasByUser } from "../../handlers/ideaHandlers";
 import { auth } from "../../middleware/auth";
 import { registry } from "../../config/swagger";
 import { GlobalErrorSchema } from "../../schemas";
-import { DepartmentSchema } from "../../schemas/Department.schema";
-import { z } from "zod";
+import { GetIdeasResponse } from "../../schemas/Idea.schema";
 
 const router = Router();
 
 registry.registerPath({
 	method: "get",
-	path: "/departments",
-	summary: "Retrieve all departments",
-	tags: ["Departments"],
+	path: "/ideas/user",
+	summary: "Retrieve ideas for the authenticated user",
+	tags: ["Ideas"],
 	security: [{ bearerAuth: [] }],
 	responses: {
 		200: {
-			description: "A list of departments",
+			description: "A list of ideas for the authenticated user",
 			content: {
 				"application/json": {
-					schema: z.array(DepartmentSchema),
+					schema: GetIdeasResponse,
 				},
 			},
 		},
@@ -34,6 +33,6 @@ registry.registerPath({
 	},
 });
 
-router.get("/", auth, getDepartments);
+router.get("/user", auth, getIdeasByUser);
 
 export default router;

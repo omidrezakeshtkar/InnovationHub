@@ -1,17 +1,19 @@
 import { Router } from "express";
-import createDepartmentRoutes from "./createDepartment";
-import updateDepartmentRoutes from "./updateDepartment";
-import getDepartmentsRoutes from "./getDepartments";
-import getDepartmentByIdRoutes from "./getDepartment";
-import deleteDepartmentRoutes from "./deleteDepartment";
+import createDepartmentRoute from "./createDepartmentRoute";
+import updateDepartmentRoute from "./updateDepartmentRoute";
+import getDepartmentsRoute from "./getDepartmentsRoute";
+import getDepartmentByIdRoute from "./getDepartmentRoute";
+import deleteDepartmentRoute from "./deleteDepartmentRoute";
+import getUsersWithoutDepartmentsRoute from "./getUsersWithoutDepartmentsRoute";
 
 const router = Router();
 
-// Use the department routes
-router.use("/", createDepartmentRoutes);
-router.use("/", updateDepartmentRoutes);
-router.use("/", getDepartmentsRoutes);
-router.use("/", getDepartmentByIdRoutes);
-router.use("/", deleteDepartmentRoutes);
+// Use the department route
+router.use("/", createDepartmentRoute);
+router.use("/", updateDepartmentRoute);
+router.use("/", getDepartmentsRoute);
+router.use("/", getUsersWithoutDepartmentsRoute);
+router.use("/", getDepartmentByIdRoute);
+router.use("/", deleteDepartmentRoute);
 
 export default router;

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getCategoryByIdOrTitle } from "../../handlers/categoryHandlers";
+import { getCategoryByIdOrName } from "../../handlers/categoryHandlers";
 import { auth } from "../../middleware/auth";
 import { registry } from "../../config/swagger";
 import { GlobalErrorSchema } from "../../schemas";
@@ -10,14 +10,17 @@ const router = Router();
 
 registry.registerPath({
 	method: "get",
-	path: "/categories/{identifier}",
+	path: "/categories/search",
 	summary: "Retrieve a category by its ID or title",
 	tags: ["Categories"],
 	security: [{ bearerAuth: [] }],
 	request: {
-		params: z.object({
-			identifier: z.string().openapi({
-				description: "The ID or title of the category to retrieve",
+		query: z.object({
+			id: z.string().optional().openapi({
+				description: "The ID of the category to retrieve",
+			}),
+			name: z.string().optional().openapi({
+				description: "The name of the category to retrieve",
 			}),
 		}),
 	},
@@ -27,6 +30,14 @@ registry.registerPath({
 			content: {
 				"application/json": {
 					schema: CategorySchema,
+				},
+			},
+		},
+		400: {
+			description: "Invalid request parameters",
+			content: {
+				"application/json": {
+					schema: GlobalErrorSchema,
 				},
 			},
 		},
@@ -41,6 +52,6 @@ registry.registerPath({
 	},
 });
 
-router.get("/:identifier", auth, getCategoryByIdOrTitle);
+router.get("/search", getCategoryByIdOrName);
 
 export default router;

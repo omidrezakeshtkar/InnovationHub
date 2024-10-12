@@ -40,7 +40,7 @@ registry.registerPath({
 router.delete(
 	"/:id",
 	auth,
-	authorize(PERMISSIONS.MANAGE_CATEGORIES),
+	authorize(PERMISSIONS.DELETE_CATEGORY),
 	deleteCategory
 );
 

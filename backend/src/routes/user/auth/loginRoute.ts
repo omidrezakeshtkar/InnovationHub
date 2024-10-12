@@ -50,6 +50,7 @@ router.post(
 		try {
 			await login(req, res, next);
 		} catch (error) {
+			console.error("Error in login route:", error);
 			next(error);
 		}
 	}

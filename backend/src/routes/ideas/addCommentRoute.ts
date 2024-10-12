@@ -1,39 +1,43 @@
 import { Router } from "express";
-import { createCategory } from "../../handlers/categoryHandlers";
+import { addComment } from "../../handlers/ideaHandlers";
 import { auth } from "../../middleware/auth";
-import { authorize } from "../../middleware/authorize";
-import { PERMISSIONS } from "../../config/permissions";
 import { validateRequest } from "../../middleware/validateRequest";
 import { GlobalErrorSchema } from "../../schemas";
 import {
-	CategoryCreateSchema,
-	CategorySchema,
-} from "../../schemas/Category.schema";
+	CommentCreateSchema,
+	CommentSchema,
+} from "../../schemas/Comment.schema";
 import { registry } from "../../config/swagger";
+import { z } from "zod";
 
 const router = Router();
 
 registry.registerPath({
 	method: "post",
-	path: "/categories",
-	summary: "Create a new category",
-	tags: ["Categories"],
+	path: "/ideas/{id}/comments",
+	summary: "Add a comment to an idea",
+	tags: ["Ideas"],
 	security: [{ bearerAuth: [] }],
 	request: {
+		params: z.object({
+			id: z
+				.string()
+				.openapi({ description: "The ID of the idea to comment on" }),
+		}),
 		body: {
 			content: {
 				"application/json": {
-					schema: CategoryCreateSchema.shape.body,
+					schema: CommentCreateSchema,
 				},
 			},
 		},
 	},
 	responses: {
 		201: {
-			description: "Category created successfully",
+			description: "Comment added successfully",
 			content: {
 				"application/json": {
-					schema: CategorySchema,
+					schema: CommentSchema,
 				},
 			},
 		},
@@ -49,11 +53,10 @@ registry.registerPath({
 });
 
 router.post(
-	"/",
+	"/:id/comments",
 	auth,
-	authorize(PERMISSIONS.MANAGE_CATEGORIES),
-	validateRequest(CategoryCreateSchema),
-	createCategory
+	validateRequest(CommentCreateSchema),
+	addComment
 );
 
 export default router;

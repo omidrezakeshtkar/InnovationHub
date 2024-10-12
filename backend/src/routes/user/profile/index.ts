@@ -1,7 +1,7 @@
 import { Router } from "express"; // Importing the Router from express
-import getUserProfileRoute from "./getUserProfile"; // Importing the route for getting user profile
-import updateUserProfileRoute from "./updateUserProfile"; // Importing the route for updating user profile
-import deleteUserRoute from "./deleteUser"; // Importing the route for deleting user
+import getUserProfileRoute from "./getUserProfileRoute"; // Importing the route for getting user profile
+import updateUserProfileRoute from "./updateUserProfileRoute"; // Importing the route for updating user profile
+import deleteUserRoute from "./deleteUserRoute"; // Importing the route for deleting user
 
 const router = Router(); // Creating a new instance of the Router
 

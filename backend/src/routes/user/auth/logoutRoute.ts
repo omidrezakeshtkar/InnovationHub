@@ -32,6 +32,7 @@ router.post("/", auth, async (req, res, next) => {
 	try {
 		await logout(req, res, next);
 	} catch (error) {
+		console.error("Error in logout route:", error);
 		next(error);
 	}
 });

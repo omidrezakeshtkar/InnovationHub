@@ -1,8 +1,8 @@
 import { Router } from "express";
-import loginRoute from "./login";
-import logoutRoute from "./logout";
-import refreshTokenRoute from "./refreshToken";
-import registerRoute from "./register";
+import loginRoute from "./loginRoute";
+import logoutRoute from "./logoutRoute";
+import refreshTokenRoute from "./refreshTokenRoute";
+import registerRoute from "./registerRoute";
 
 const router = Router();
 
