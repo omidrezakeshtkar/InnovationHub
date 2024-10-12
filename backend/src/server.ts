@@ -4,6 +4,7 @@ import { connectDatabase } from "./database/connection";
 import { runMigrations } from "./services/migrationService";
 import logger from "./utils/logger";
 import redisClient from "./utils/redisClient";
+import { checkEmailService } from "./services/emailService";
 
 const PORT = config.port || 3000;
 
@@ -19,6 +20,9 @@ const startServer = async () => {
 
 		await runMigrations();
 		logger.info("Database migrations completed successfully");
+
+		await checkEmailService();
+		logger.info("Email service is up and running");
 
 		app.listen(PORT, () => {
 			logger.info(`Server is running on port ${PORT}`);

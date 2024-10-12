@@ -1,8 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import swaggerUi from "swagger-ui-express";
-import { generateOpenApiDocument, swaggerUiOptions } from "./config/swagger";
+import { setupSwagger } from "./config/swagger";
 import routes from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
 import config from "./config";
@@ -37,20 +36,8 @@ if (config.nodeEnv === "development") {
 app.use(express.json());
 
 // Generate OpenAPI document
-const openApiDocument = generateOpenApiDocument();
 
-// Serve Swagger specification as JSON
-app.get("/api-docs.json", (req, res) => {
-	res.setHeader("Content-Type", "application/json");
-	res.send(openApiDocument);
-});
-
-// Serve Swagger UI
-app.use(
-	"/api-docs",
-	swaggerUi.serve,
-	swaggerUi.setup(openApiDocument, swaggerUiOptions)
-);
+setupSwagger(app);
 
 // Apply routes
 app.use("/api", routes);
