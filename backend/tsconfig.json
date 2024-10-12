@@ -8,12 +8,12 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"typeRoots": [
-			"./node_modules/@types",
-			"./src/types" // Ensure this path is correct
-		],
-		"types": ["node", "express"] // Include any other types you need
+		"typeRoots": ["./node_modules/@types", "@types"],
+		"types": ["node", "express"],
+		"jsx": "react",
+		"allowJs": true,
+		"moduleResolution": "node"
 	},
-	"include": ["src/**/*", "src/**/*.html"],
+	"include": ["src/**/*", "src/**/*.html", "src/**/*.tsx", "src/**/*.jsx"],
 	"exclude": ["node_modules", "**/*.spec.ts"]
 }
