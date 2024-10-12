@@ -1,4 +1,5 @@
-import { Schema, model, Document } from 'mongoose';
+import { ObjectId } from "mongodb";
+import { Schema, model, Document } from "mongoose";
 
 /**
  * @swagger
@@ -64,31 +65,46 @@ import { Schema, model, Document } from 'mongoose';
  *             type: string
  */
 interface IIdea extends Document {
-  title: string;
-  description: string;
-  author: Schema.Types.ObjectId;
-  coAuthors: Schema.Types.ObjectId[];
-  status: string;
-  category: Schema.Types.ObjectId;
-  department: string;
-  votes: number;
-  tags: string[];
-  currentVersion: number;
-  createdAt: Date;
-  updatedAt: Date;
+	title: string;
+	description: string;
+	author: ObjectId;
+	coAuthors: ObjectId[];
+	status: string;
+	category: ObjectId;
+	department: string;
+	votes: number;
+	tags: string[];
+	currentVersion: number;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
-const ideaSchema = new Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  coAuthors: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  status: { type: String, enum: ['draft', 'submitted', 'in_review', 'approved', 'implemented', 'rejected'], default: 'draft' },
-  category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
-  department: { type: String, required: true },
-  votes: { type: Number, default: 0 },
-  tags: [{ type: String }],
-  currentVersion: { type: Number, default: 1 },
-}, { timestamps: true });
+const ideaSchema = new Schema(
+	{
+		title: { type: String, required: true },
+		description: { type: String, required: true },
+		author: { type: ObjectId, ref: "User", required: true },
+		coAuthors: [{ type: ObjectId, ref: "User" }],
+		status: {
+			type: String,
+			enum: [
+				"pending_approval",
+				"draft",
+				"submitted",
+				"in_review",
+				"approved",
+				"implemented",
+				"rejected",
+			],
+			default: "draft",
+		},
+		category: { type: ObjectId, ref: "Category", required: true },
+		department: { type: String, required: true },
+		votes: { type: Number, default: 0 },
+		tags: [{ type: String }],
+		currentVersion: { type: Number, default: 1 },
+	},
+	{ timestamps: true }
+);
 
-export default model<IIdea>('Idea', ideaSchema);
+export default model<IIdea>("Idea", ideaSchema);
