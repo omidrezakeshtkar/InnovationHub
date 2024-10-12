@@ -22,11 +22,11 @@ export default {
 		secretKey: process.env.MINIO_SECRET_KEY || "minioadmin",
 	},
 	email: {
-		host: process.env.EMAIL_HOST || "smtp.ethereal.email",
-		port: parseInt(process.env.EMAIL_PORT || "587", 10),
+		host: process.env.EMAIL_HOST || "mailhog.localhost", // Use 'localhost' if MailHog is running locally
+		port: parseInt(process.env.EMAIL_PORT || "1025", 10),
 		secure: process.env.EMAIL_SECURE === "true",
-		user: process.env.EMAIL_USER || "your_ethereal_username",
-		password: process.env.EMAIL_PASSWORD || "your_ethereal_password",
+		user: process.env.EMAIL_USER || undefined,
+		password: process.env.EMAIL_PASSWORD || undefined,
 		from: process.env.EMAIL_FROM || "IdeaExchange <noreply@ideaexchange.com>",
 	},
 	rateLimit: {

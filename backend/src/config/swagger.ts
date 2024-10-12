@@ -3,6 +3,8 @@ import {
 	OpenAPIRegistry,
 } from "@asteasolutions/zod-to-openapi";
 import { SwaggerOptions } from "swagger-ui-express";
+import swaggerUi from "swagger-ui-express";
+import { Express, Request, Response } from "express";
 import * as schemas from "../schemas";
 
 export const registry = new OpenAPIRegistry();
@@ -37,6 +39,13 @@ export const generateOpenApiDocument = () => {
 	});
 };
 
+// Define security scheme separately
+registry.registerComponent("securitySchemes", "bearerAuth", {
+	type: "http",
+	scheme: "bearer",
+	bearerFormat: "JWT",
+});
+
 export const swaggerUiOptions: SwaggerOptions = {
 	swaggerOptions: {
 		url: "/api-docs.json",
@@ -45,16 +54,20 @@ export const swaggerUiOptions: SwaggerOptions = {
 };
 
 // Function to setup Swagger UI
-export const setupSwagger = (app: any) => {
-	const swaggerUi = require("swagger-ui-express");
+export const setupSwagger = (app: Express): void => {
 	const openApiDocument = generateOpenApiDocument();
 
 	app.use(
 		"/api-docs",
 		swaggerUi.serve,
-		swaggerUi.setup(openApiDocument, swaggerUiOptions)
+		swaggerUi.setup(openApiDocument, {
+			swaggerOptions: {
+				persistAuthorization: true,
+			},
+		})
 	);
-	app.get("/api-docs.json", (req: any, res: any) => {
+
+	app.get("/api-docs.json", (req: Request, res: Response) => {
 		res.setHeader("Content-Type", "application/json");
 		res.send(openApiDocument);
 	});
