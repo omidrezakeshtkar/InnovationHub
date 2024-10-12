@@ -3,29 +3,92 @@ import jwt from "jsonwebtoken";
 import config from "../config";
 import redisClient from "../utils/redisClient";
 import { IUser } from "../models/User"; // Adjust this import path as necessary
+import { generateClientIdentifier } from "../handlers/authHandlers";
+import { Token } from "../schemas/User.schema";
+import { AppError } from "./errorHandler";
+import logger from "../utils/logger";
+import User from "../models/User"; // Import the User model
 
 export async function auth(req: Request, res: Response, next: NextFunction) {
-	const token = req.headers["authorization"]?.split(" ")[1];
+	const token = req.headers.authorization?.split(" ")[1];
 
 	if (!token) {
-		return res.status(401).json({ message: "No token provided" });
+		if (process.env.NODE_ENV === "development") {
+			logger.debug("No token provided");
+		}
+		next(new AppError("No token provided", 401));
+		return; // Ensure return is used
 	}
 
 	try {
-		const tokenExists = await redisClient.exists(token);
-		if (!tokenExists) {
-			return res.status(401).json({ message: "Invalid session" });
+		// Verify the token and extract user information
+		const decoded = jwt.verify(
+			token,
+			config.accessTokenSecret
+		) as Token["payload"];
+
+		if (!decoded._id) {
+			throw new Error("Invalid token payload");
 		}
 
-		jwt.verify(token, config.jwtSecret, (err, decoded) => {
-			if (err) {
-				return res.status(403).json({ message: "Failed to authenticate token" });
+		if (process.env.NODE_ENV === "development") {
+			logger.debug(`Token verified for user: ${decoded._id}`);
+		}
+
+		// Generate clientId internally
+		const clientId = generateClientIdentifier(req);
+
+		// Check if the access token exists in Redis using clientId
+		const tokenExists = await redisClient.exists(
+			`access_token:${decoded._id}:${clientId}`
+		);
+		if (!tokenExists) {
+			if (process.env.NODE_ENV === "development") {
+				logger.debug(`Invalid session for user: ${decoded._id}`);
 			}
-			(req as any).user = decoded as IUser;
-			next();
-		});
+			next(new AppError("Invalid session", 401));
+			return; // Ensure return is used
+		}
+
+		// Load user from database and attach to request
+		const user = await User.findById(decoded._id).select("-password");
+		if (!user) {
+			throw new AppError("User not found", 404);
+		}
+		(req as any).user = user;
+
+		if (process.env.NODE_ENV === "development") {
+			logger.debug(`Authentication successful for user: ${decoded._id}`);
+		}
+
+		next();
 	} catch (error) {
-		return res.status(500).json({ message: "Internal Server Error" });
+		if (error instanceof jwt.TokenExpiredError) {
+			if (process.env.NODE_ENV === "development") {
+				logger.debug("Token has expired");
+			}
+			next(new AppError("Token has expired", 401));
+			return; // Ensure return is used
+		}
+		if (
+			error instanceof Error &&
+			error.message === "Failed to authenticate token"
+		) {
+			if (process.env.NODE_ENV === "development") {
+				logger.debug(`Failed to authenticate token: ${error.message}`);
+			}
+			next(new AppError(error.message, 403));
+			return; // Ensure return is used
+		}
+		if (process.env.NODE_ENV === "development") {
+			logger.error(
+				`Internal Server Error: ${
+					error instanceof Error ? error.message : "Unknown error"
+				}`
+			);
+		}
+		next(new AppError("Internal Server Error", 500));
+		return; // Ensure return is used
 	}
 }
 
