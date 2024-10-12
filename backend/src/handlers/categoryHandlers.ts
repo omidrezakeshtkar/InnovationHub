@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import Category from "../models/Category";
+import Idea from "../models/Idea";
 import { AppError } from "../middleware/errorHandler";
 import logger from "../utils/logger";
+import { CategoryUpdate } from "../schemas/Category.schema";
+import mongoose from "mongoose";
 
 // Handler to create a new category
 export const createCategory = async (
@@ -10,11 +13,14 @@ export const createCategory = async (
 	next: NextFunction
 ) => {
 	try {
-		const { name, description } = req.body;
+		const { name, description } = req.body as {
+			name: string;
+			description: string;
+		};
 		const existingCategory = await Category.findOne({ name });
 
 		if (existingCategory) {
-			throw new AppError("Category already exists", 400);
+			return next(new AppError("Category already exists", 400));
 		}
 
 		const category = new Category({ name, description });
@@ -24,7 +30,7 @@ export const createCategory = async (
 		res.status(201).json(category);
 	} catch (error) {
 		logger.error("Error creating category:", error);
-		next(error);
+		return next(new AppError("Error creating category", 500));
 	}
 };
 
@@ -36,23 +42,28 @@ export const updateCategory = async (
 ) => {
 	try {
 		const { id } = req.params;
-		const { name, description } = req.body;
+		const { name, description } = req.body as Partial<CategoryUpdate["body"]>;
+
+		const updateFields: Partial<CategoryUpdate["body"]> = {};
+
+		if (name !== undefined) updateFields.name = name;
+		if (description !== undefined) updateFields.description = description;
 
 		const category = await Category.findByIdAndUpdate(
 			id,
-			{ name, description },
+			{ $set: updateFields },
 			{ new: true, runValidators: true }
 		);
 
 		if (!category) {
-			throw new AppError("Category not found", 404);
+			return next(new AppError("Category not found", 404));
 		}
 
 		logger.info(`Category updated: ${id}`);
 		res.json(category);
 	} catch (error) {
 		logger.error("Error updating category:", error);
-		next(error);
+		return next(new AppError("Error updating category", 500));
 	}
 };
 
@@ -68,52 +79,96 @@ export const deleteCategory = async (
 		const category = await Category.findByIdAndDelete(id);
 
 		if (!category) {
-			throw new AppError("Category not found", 404);
+			return next(new AppError("Category not found", 404));
 		}
 
 		logger.info(`Category deleted: ${id}`);
 		res.status(200).json({ message: "Category deleted successfully" });
 	} catch (error) {
 		logger.error("Error deleting category:", error);
-		next(error);
+		return next(new AppError("Error deleting category", 500));
 	}
 };
 
-// Handler to get all categories
+// Handler to get all categories with pagination
 export const getCategories = async (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
 	try {
-		const categories = await Category.find();
-		res.json(categories);
+		const { limit = 10, offset = 0 } = req.query;
+
+		const categories = await Category.find()
+			.skip(Number(offset))
+			.limit(Number(limit));
+
+		const categoriesWithIdeasCount = await Promise.all(
+			categories.map(async (category) => {
+				const ideasCount = await Idea.countDocuments({
+					category: category._id,
+				});
+				return {
+					...category.toObject(),
+					ideasCount,
+				};
+			})
+		);
+
+		res.json(categoriesWithIdeasCount);
 	} catch (error) {
 		logger.error("Error fetching categories:", error);
-		next(error);
+		return next(new AppError("Error fetching categories", 500));
 	}
 };
 
-// Handler to get a category by ID or title
-export const getCategoryByIdOrTitle = async (
+export const getCategoryByIdOrName = async (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
 	try {
-		const { identifier } = req.params;
+		const { id, name } = req.query;
 
-		const category = await Category.findOne({
-			$or: [{ _id: identifier }, { name: identifier }],
-		});
-
-		if (!category) {
-			throw new AppError("Category not found", 404);
+		if (id && name) {
+			return next(
+				new AppError("Please provide either id or name, not both", 400)
+			);
 		}
 
-		res.json(category);
+		let categories;
+		if (id) {
+			if (mongoose.Types.ObjectId.isValid(id as string)) {
+				categories = await Category.find({ _id: id });
+			} else {
+				return next(new AppError("Invalid id format", 400));
+			}
+		} else if (name) {
+			const regex = new RegExp(name as string, "i");
+			categories = await Category.find({ name: regex });
+		} else {
+			return next(new AppError("Please provide either id or name", 400));
+		}
+
+		if (categories.length === 0) {
+			return next(new AppError("No matching categories found", 404));
+		}
+
+		const categoriesWithIdeasCount = await Promise.all(
+			categories.map(async (category) => {
+				const ideasCount = await Idea.countDocuments({
+					category: category._id,
+				});
+				return {
+					...category.toObject(),
+					ideasCount,
+				};
+			})
+		);
+
+		res.json(categoriesWithIdeasCount);
 	} catch (error) {
 		logger.error("Error fetching category by ID or title:", error);
-		next(error);
+		return next(new AppError("Error fetching category", 500));
 	}
 };
