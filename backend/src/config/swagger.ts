@@ -22,9 +22,9 @@ export const generateOpenApiDocument = () => {
 	return generator.generateDocument({
 		openapi: "3.0.0",
 		info: {
-			title: "IdeaExchange API",
+			title: "InnovationHub API",
 			version: "1.0.0",
-			description: "API for IdeaExchange platform",
+			description: "API for InnovationHub platform",
 		},
 		servers: [
 			{

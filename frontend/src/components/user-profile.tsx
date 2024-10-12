@@ -8,6 +8,7 @@ import {
 	Award,
 	Star,
 	Shield,
+	PlusCircle,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -163,32 +164,55 @@ export function UserProfileComponent() {
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 					<div className="md:col-span-2">
 						<h2 className="text-2xl font-bold text-gray-800 mb-4">My Ideas</h2>
-						<div className="space-y-4">
-							{ideas.map((idea) => (
-								<div
-									key={idea._id}
-									className="bg-white shadow-md rounded-lg p-4 flex justify-between items-center"
-								>
-									<div>
-										<h3 className="text-lg font-semibold text-gray-800">
-											{idea.title}
-										</h3>
-										<p className="text-gray-600 text-sm">
-											{new Date(idea.createdAt).toLocaleDateString()}
-										</p>
-									</div>
+						{ideas.length > 0 ? (
+							<div className="space-y-4">
+								{ideas.map((idea) => (
 									<div
-										className="flex items-center"
-										style={{ color: primaryColor }}
+										key={idea._id}
+										className="bg-white shadow-md rounded-lg p-4 flex justify-between items-center"
 									>
-										<ArrowUp size={20} />
-										<span className="ml-1 font-semibold">
-											{idea.votes} votes
-										</span>
+										<div>
+											<h3 className="text-lg font-semibold text-gray-800">
+												{idea.title}
+											</h3>
+											<p className="text-gray-600 text-sm">
+												{new Date(idea.createdAt).toLocaleDateString()}
+											</p>
+										</div>
+										<div
+											className="flex items-center"
+											style={{ color: primaryColor }}
+										>
+											<ArrowUp size={20} />
+											<span className="ml-1 font-semibold">
+												{idea.votes} votes
+											</span>
+										</div>
 									</div>
-								</div>
-							))}
-						</div>
+								))}
+							</div>
+						) : (
+							<div className="bg-white shadow-md rounded-lg p-8 text-center">
+								<PlusCircle
+									size={48}
+									className="mx-auto mb-4"
+									style={{ color: primaryColor }}
+								/>
+								<h3 className="text-xl font-semibold text-gray-800 mb-2">
+									No Ideas Yet
+								</h3>
+								<p className="text-gray-600 mb-4">
+									You haven't submitted any ideas yet. Why not start now?
+								</p>
+								<Link
+									to="/ideas/new"
+									className="inline-block px-6 py-2 rounded-md text-white transition duration-300 hover:opacity-90"
+									style={{ backgroundColor: primaryColor }}
+								>
+									Submit Your First Idea
+								</Link>
+							</div>
+						)}
 					</div>
 
 					<div>

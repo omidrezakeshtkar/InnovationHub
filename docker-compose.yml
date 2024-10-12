@@ -1,6 +1,6 @@
 version: '3.8'
 
-name: ideaexchange
+name: innovationHub
 
 services:
   backend:
@@ -10,7 +10,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=mongodb://mongodb:27017/ideaexchange
+      - DATABASE_URL=mongodb://mongodb:27017/innovationHub
       - JWT_SECRET=your_jwt_secret_here
       - REDIS_URL=redis://redis:6379
       - MINIO_ENDPOINT=minio

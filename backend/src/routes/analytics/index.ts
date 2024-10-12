@@ -1,53 +1,17 @@
-// import { Router } from "express";
-// import {
-// 	getAnalytics,
-// 	getCategoryAnalytics,
-// 	getIdeaTrendsAnalytics,
-// 	getOverallAnalytics,
-// 	getUserEngagementAnalytics,
-// } from "../../handlers/analyticsHandlers";
-// import { auth } from "../../middleware/auth";
-// import { authorize } from "../../middleware/authorize";
-// import { PERMISSIONS } from "../../config/permissions";
-// import { validateRequest } from "../../middleware/validateRequest";
-// import { schemas } from "../../validation/schemas";
+import { Router } from "express";
+import analyticsRoute from "./analyticsRoute";
+import categoryAnalyticsRoute from "./categoryAnalyticsRoute";
+import ideaTrendsRoute from "./ideaTrendsRoute";
+import overallAnalyticsRoute from "./overallAnalyticsRoute";
+import userEngagementRoute from "./userEngagementRoute";
 
-// const router = Router();
+const router = Router();
 
-// router.get(
-// 	"/",
-// 	auth,
-// 	authorize(PERMISSIONS.VIEW_ANALYTICS),
-// 	validateRequest(schemas.analytics.getAnalytics),
-// 	getAnalytics
-// );
-// router.get(
-// 	"/categories",
-// 	auth,
-// 	authorize(PERMISSIONS.VIEW_ANALYTICS),
-// 	validateRequest(schemas.analytics.getCategoryAnalytics),
-// 	getCategoryAnalytics
-// );
-// router.get(
-// 	"/idea-trends",
-// 	auth,
-// 	authorize(PERMISSIONS.VIEW_ANALYTICS),
-// 	validateRequest(schemas.analytics.getIdeaTrendsAnalytics),
-// 	getIdeaTrendsAnalytics
-// );
-// router.get(
-// 	"/overall",
-// 	auth,
-// 	authorize(PERMISSIONS.VIEW_ANALYTICS),
-// 	validateRequest(schemas.analytics.getOverallAnalytics),
-// 	getOverallAnalytics
-// );
-// router.get(
-// 	"/user-engagement",
-// 	auth,
-// 	authorize(PERMISSIONS.VIEW_ANALYTICS),
-// 	validateRequest(schemas.analytics.getUserEngagementAnalytics),
-// 	getUserEngagementAnalytics
-// );
+// Use the analytics routes
+router.use("/", analyticsRoute);
+router.use("/", categoryAnalyticsRoute);
+router.use("/", ideaTrendsRoute);
+router.use("/", overallAnalyticsRoute);
+router.use("/", userEngagementRoute);
 
-// export default router;
+export default router;

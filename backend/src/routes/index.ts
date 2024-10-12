@@ -1,5 +1,5 @@
 import { Router } from "express"; // Import the Router from express for routing
-// import analyticsRoutes from "./analytics"; // Import analytics routes from the analytics index
+import analyticsRoutes from "./analytics"; // Import analytics routes from the analytics index
 // import badgeRoutes from "./badge"; // Import badge routes from the badge index
 import categoryRoutes from "./category"; // Import category routes from the category index
 import departmentRoutes from "./departments"; // Import department routes from the department index
@@ -10,7 +10,7 @@ import userRoutes from "./user"; // Import user routes from the user index
 const router = Router();
 
 // Mount the analytics routes at the /analytics path
-// router.use("/analytics", analyticsRoutes);
+router.use("/analytics", analyticsRoutes);
 // Mount the badge routes at the /badges path
 // router.use("/badges", badgeRoutes);
 // Mount the category routes at the /categories path

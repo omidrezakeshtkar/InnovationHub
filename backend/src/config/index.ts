@@ -7,8 +7,8 @@ export default {
 	nodeEnv: process.env.NODE_ENV || "development",
 	databaseUrl:
 		process.env.NODE_ENV === "development"
-			? "mongodb://localhost:27017/ideaexchange"
-			: process.env.DATABASE_URL || "mongodb://mongodb:27017/ideaexchange",
+			? "mongodb://localhost:27017/InnovationHub"
+			: process.env.DATABASE_URL || "mongodb://mongodb:27017/InnovationHub",
 	jwtSecret: process.env.JWT_SECRET || "your-jwt-secret-key",
 	refreshTokenSecret:
 		process.env.REFRESH_TOKEN_SECRET || "your-refresh-token-secret-key",
@@ -27,7 +27,7 @@ export default {
 		secure: process.env.EMAIL_SECURE === "true",
 		user: process.env.EMAIL_USER || undefined,
 		password: process.env.EMAIL_PASSWORD || undefined,
-		from: process.env.EMAIL_FROM || "IdeaExchange <noreply@ideaexchange.com>",
+		from: process.env.EMAIL_FROM || "InnovationHub <noreply@InnovationHub.com>",
 	},
 	rateLimit: {
 		windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000", 10),

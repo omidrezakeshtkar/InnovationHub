@@ -85,7 +85,7 @@ export function SignUpComponent({
 		<div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-16 px-4 sm:px-6 lg:px-8">
 			<div className="max-w-md mx-auto">
 				<h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-					Sign Up for IdeaExchange
+					Sign Up for InnovationHub
 				</h2>
 				<form
 					onSubmit={handleSubmit}

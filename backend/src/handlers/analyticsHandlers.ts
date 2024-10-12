@@ -1,9 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { analyticsService } from "../services/analyticsService";
-import { Idea, User } from "../models"; // Adjust imports based on your models
+import { Idea, User } from "../models";
+import { AppError } from "../middleware/errorHandler";
+import logger from "../utils/logger";
+import { IdeaSchema } from "../schemas";
 
 // Handler for overall analytics
-export const getOverallAnalytics = async (req: Request, res: Response) => {
+export const getOverallAnalytics = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
 	try {
 		const totalIdeas = await Idea.countDocuments();
 		const totalUsers = await User.countDocuments();
@@ -16,52 +23,81 @@ export const getOverallAnalytics = async (req: Request, res: Response) => {
 			totalUsers,
 			totalVotes: totalVotes[0]?.totalVotes || 0,
 		});
-	} catch (error) {
-		res
-			.status(500)
-			.json({ message: "Error retrieving overall analytics", error });
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			logger.error("Error retrieving overall analytics", {
+				errorMessage: error.message,
+			});
+		}
+		next(new AppError("Error retrieving overall analytics", 500));
 	}
 };
 
 // Handler for user engagement analytics
 export const getUserEngagementAnalytics = async (
 	req: Request,
-	res: Response
+	res: Response,
+	next: NextFunction
 ) => {
 	try {
+		const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 		const activeUsers = await User.countDocuments({
-			lastActive: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-		}); // Active in the last 30 days
-		const engagementRate = (activeUsers / (await User.countDocuments())) * 100; // Example calculation
+			lastActive: { $gte: thirtyDaysAgo },
+		});
+		const totalUsers = await User.countDocuments();
+		const engagementRate =
+			totalUsers > 0 ? (activeUsers / totalUsers) * 100 : 0;
 
 		res.status(200).json({
 			activeUsers,
-			engagementRate,
+			engagementRate: parseFloat(engagementRate.toFixed(2)),
 		});
-	} catch (error) {
-		res
-			.status(500)
-			.json({ message: "Error retrieving user engagement analytics", error });
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			logger.error("Error retrieving user engagement analytics", {
+				errorMessage: error.message,
+			});
+		}
+		next(new AppError("Error retrieving user engagement analytics", 500));
 	}
 };
 
 // Handler for idea trends analytics
-export const getIdeaTrendsAnalytics = async (req: Request, res: Response) => {
+export const getIdeaTrendsAnalytics = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
 	try {
-		const trendingIdeas = await Idea.find().sort({ votes: -1 }).limit(5); // Top 5 ideas by votes
+		const trendingIdeas = await Idea.find()
+			.sort({ votes: -1 })
+			.limit(5)
+			.select("-author -coAuthors")
+			.lean();
+
+		const sanitizedTrendingIdeas = trendingIdeas.map((idea) =>
+			IdeaSchema.parse(idea)
+		);
 
 		res.status(200).json({
-			trendingIdeas,
+			trendingIdeas: sanitizedTrendingIdeas,
 		});
-	} catch (error) {
-		res
-			.status(500)
-			.json({ message: "Error retrieving idea trends analytics", error });
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			logger.error("Error retrieving idea trends analytics", {
+				errorMessage: error.message,
+			});
+		}
+		next(new AppError("Error retrieving idea trends analytics", 500));
 	}
 };
 
 // Handler for category analytics
-export const getCategoryAnalytics = async (req: Request, res: Response) => {
+export const getCategoryAnalytics = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
 	try {
 		const categoryStats = await Idea.aggregate([
 			{ $group: { _id: "$category", ideasSubmitted: { $sum: 1 } } },
@@ -71,10 +107,13 @@ export const getCategoryAnalytics = async (req: Request, res: Response) => {
 		res.status(200).json({
 			categoryStats,
 		});
-	} catch (error) {
-		res
-			.status(500)
-			.json({ message: "Error retrieving category analytics", error });
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			logger.error("Error retrieving category analytics", {
+				errorMessage: error.message,
+			});
+		}
+		next(new AppError("Error retrieving category analytics", 500));
 	}
 };
 
@@ -95,8 +134,12 @@ export const getAnalytics = async (
 			userEngagement,
 			ideaTrends,
 		});
-	} catch (error) {
-		res.status(500).json({ message: "Error fetching analytics data" });
-		next(error);
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			logger.error("Error fetching analytics data", {
+				errorMessage: error.message,
+			});
+		}
+		next(new AppError("Error fetching analytics data", 500));
 	}
 };

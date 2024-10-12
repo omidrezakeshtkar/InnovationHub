@@ -1,6 +1,6 @@
 {
-	"name": "ideaexchange-backend",
-	"version": "1.0.0",
+	"name": "innovation-hub-backend",
+	"version": "2.0.0",
 	"main": "dist/server.js",
 	"engines": {
 		"node": ">=20.0.0"
@@ -15,8 +15,8 @@
 		"postdev": "docker compose -f ../docker-compose.dev.yml down",
 		"prebuild": "rimraf dist",
 		"build": "tsc && copyfiles -u 1 src/**/*.{json,yaml,html,js} dist",
-		"docker:build": "docker build -t ideaexchange-backend .",
-		"docker:run": "docker run -p 3000:3000 ideaexchange-backend",
+		"docker:build": "docker build -t InnovationHub-backend .",
+		"docker:run": "docker run -p 3000:3000 InnovationHub-backend",
 		"migrate:up": "migrate-mongo up -f src/migrations/migrate-mongo-config.js",
 		"migrate:down": "migrate-mongo down -f src/migrations/migrate-mongo-config.js",
 		"migrate:status": "migrate-mongo status -f src/migrations/migrate-mongo-config.js",

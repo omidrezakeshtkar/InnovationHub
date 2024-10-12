@@ -305,6 +305,41 @@ export const voteIdea = async (
 	}
 };
 
+export const devoteIdea = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { id } = req.params;
+		const decoded = getTokenPayload(req, res, next) as Token["payload"];
+		const userId = new mongoose.Types.ObjectId(decoded._id);
+
+		const idea = await Idea.findOneAndUpdate(
+			{ _id: id, status: { $ne: "pending_approval" } },
+			{ $inc: { votes: -1 } },
+			{ new: true }
+		);
+
+		if (!idea) {
+			logger.warn(`Idea not found for devoting, id: ${id}`);
+			return next(new AppError("Idea not found", 404));
+		}
+
+		const updatedUser = await awardPoints(userId, -1);
+
+		if (process.env.NODE_ENV === "development") {
+			logger.debug(`Vote removed from idea: ${id}`);
+			logger.debug(`Updated user points: ${updatedUser?.points}`);
+		}
+
+		res.json({ idea, userPoints: updatedUser?.points });
+	} catch (error) {
+		logger.error(`Error devoting idea: ${error}`);
+		return next(new AppError("Error devoting idea", 500));
+	}
+};
+
 export const addComment = async (
 	req: Request<{ id: string }, {}, { content: string }>,
 	res: Response,
