@@ -1,15 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-	Home,
-	Lightbulb,
-	GitPullRequest,
-	MessageSquare,
-	Bell,
-	Plus,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import branding from "../branding.json";
+import LeftSidebar from "./admin-dashboard-pages/left-sidebar";
 
 const overviewData = [
 	{ title: "Total users", value: 112 },
@@ -98,35 +92,7 @@ export function AdminDashboardComponent() {
 			<div className="max-w-7xl mx-auto">
 				<div className="flex flex-col md:flex-row">
 					{/* Sidebar */}
-					<div className="w-full md:w-64 mb-8 md:mb-0 md:mr-8">
-						<nav className="bg-white shadow-md rounded-lg p-4">
-							<ul className="space-y-2">
-								<li
-									className="flex items-center space-x-2"
-									style={{ color: primaryColor }}
-								>
-									<Home size={20} />
-									<span>Home</span>
-								</li>
-								<li className="flex items-center space-x-2 text-gray-700 hover:text-primary">
-									<Lightbulb size={20} />
-									<span>Ideas</span>
-								</li>
-								<li className="flex items-center space-x-2 text-gray-700 hover:text-primary">
-									<GitPullRequest size={20} />
-									<span>Roadmap</span>
-								</li>
-								<li className="flex items-center space-x-2 text-gray-700 hover:text-primary">
-									<MessageSquare size={20} />
-									<span>Feedback</span>
-								</li>
-								<li className="flex items-center space-x-2 text-gray-700 hover:text-primary">
-									<Bell size={20} />
-									<span>Announcements</span>
-								</li>
-							</ul>
-						</nav>
-					</div>
+					<LeftSidebar />
 
 					{/* Main content */}
 					<div className="flex-grow">

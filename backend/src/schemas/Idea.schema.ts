@@ -37,6 +37,8 @@ export const IdeaSchema = z
 		categoryId: objectIdSchema.openapi({ example: "60d5ec49f1b2c72b9c8e4d3b" }),
 		department: z.string().openapi({ example: "Engineering" }),
 		votes: z.number().openapi({ example: 10 }),
+		devotes: z.number().openapi({ example: 5 }),
+		netVotes: z.number().openapi({ example: 5 }),
 		tags: z
 			.array(z.string())
 			.optional()
@@ -55,6 +57,8 @@ export const IdeaCreateSchema = z
 			author: true,
 			status: true,
 			votes: true,
+			devotes: true,
+			netVotes: true,
 			currentVersion: true,
 			createdAt: true,
 			updatedAt: true,
@@ -72,6 +76,8 @@ export const IdeaUpdateSchema = z
 			author: true,
 			status: true,
 			votes: true,
+			devotes: true,
+			netVotes: true,
 			currentVersion: true,
 			createdAt: true,
 			updatedAt: true,

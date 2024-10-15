@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { getIdeaByIdOrTitle } from "../../handlers/ideaHandlers";
-import { auth } from "../../middleware/auth";
+import { getIdeaByIdOrTitle } from "../../../handlers/ideaHandlers";
+import { auth } from "../../../middleware/auth";
 import { z } from "zod";
-import { registry } from "../../config/swagger";
-import { GlobalErrorSchema } from "../../schemas";
-import { IdeaSchema } from "../../schemas/Idea.schema";
+import { registry } from "../../../config/swagger";
+import { GlobalErrorSchema } from "../../../schemas";
+import { IdeaSchema } from "../../../schemas/Idea.schema";
 
 const router = Router();
 
@@ -43,6 +43,6 @@ registry.registerPath({
 	},
 });
 
-router.get("/search", auth, getIdeaByIdOrTitle);
+router.get("/search", getIdeaByIdOrTitle);
 
 export default router;

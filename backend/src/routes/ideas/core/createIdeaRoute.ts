@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { createIdea } from "../../handlers/ideaHandlers";
-import { auth } from "../../middleware/auth";
-import { authorize } from "../../middleware/authorize";
-import { PERMISSIONS } from "../../config/permissions";
-import { validateRequest } from "../../middleware/validateRequest";
-import { GlobalErrorSchema } from "../../schemas";
-import { IdeaCreateSchema, IdeaSchema } from "../../schemas/Idea.schema";
-import { registry } from "../../config/swagger";
+import { createIdea } from "../../../handlers/ideaHandlers";
+import { auth } from "../../../middleware/auth";
+import { authorize } from "../../../middleware/authorize";
+import { PERMISSIONS } from "../../../config/permissions";
+import { validateRequest } from "../../../middleware/validateRequest";
+import { GlobalErrorSchema } from "../../../schemas";
+import { IdeaCreateSchema, IdeaSchema } from "../../../schemas/Idea.schema";
+import { registry } from "../../../config/swagger";
 
 const router = Router();
 

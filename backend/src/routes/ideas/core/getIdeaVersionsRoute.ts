@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { getIdeaVersions } from "../../handlers/ideaHandlers";
-import { auth } from "../../middleware/auth";
-import { registry } from "../../config/swagger";
+import { getIdeaVersions } from "../../../handlers/ideaHandlers";
+import { auth } from "../../../middleware/auth";
+import { registry } from "../../../config/swagger";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import { GlobalErrorSchema } from "../../schemas";
-import { IdeaVersionSchema } from "../../schemas/IdeaVersion.schema";
+import { GlobalErrorSchema } from "../../../schemas";
+import { IdeaVersionSchema } from "../../../schemas/IdeaVersion.schema";
 
 extendZodWithOpenApi(z);
 

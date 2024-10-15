@@ -31,7 +31,7 @@ export function NotificationBar({
 	};
 
 	return (
-		<div className="fixed bottom-4 left-4 space-y-2">
+		<div className="fixed bottom-4 left-4 space-y-2" style={{ zIndex: 9999 }}>
 			<AnimatePresence>
 				{notifications.map((notification) => (
 					<motion.div

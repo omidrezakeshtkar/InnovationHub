@@ -1,69 +1,6 @@
 import { ObjectId } from "mongodb";
 import { Schema, model, Document } from "mongoose";
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     Idea:
- *       type: object
- *       required:
- *         - title
- *         - description
- *         - author
- *         - category
- *         - department
- *       properties:
- *         title:
- *           type: string
- *         description:
- *           type: string
- *         author:
- *           type: string
- *           description: User ID of the author
- *         coAuthors:
- *           type: array
- *           items:
- *             type: string
- *           description: Array of User IDs
- *         status:
- *           type: string
- *           enum: [draft, submitted, in_review, approved, implemented, rejected]
- *         category:
- *           type: string
- *           description: Category ID
- *         department:
- *           type: string
- *         votes:
- *           type: number
- *         tags:
- *           type: array
- *           items:
- *             type: string
- *         currentVersion:
- *           type: number
- *     NewIdea:
- *       type: object
- *       required:
- *         - title
- *         - description
- *         - category
- *         - department
- *       properties:
- *         title:
- *           type: string
- *         description:
- *           type: string
- *         category:
- *           type: string
- *           description: Category ID
- *         department:
- *           type: string
- *         tags:
- *           type: array
- *           items:
- *             type: string
- */
 interface IIdea extends Document {
 	title: string;
 	description: string;
@@ -73,6 +10,9 @@ interface IIdea extends Document {
 	category: ObjectId;
 	department: string;
 	votes: number;
+	devotes: number;
+	netVotes: number;
+	userVotes: { userId: ObjectId; vote: string }[];
 	tags: string[];
 	currentVersion: number;
 	createdAt: Date;
@@ -101,6 +41,14 @@ const ideaSchema = new Schema(
 		category: { type: ObjectId, ref: "Category", required: true },
 		department: { type: String, required: true },
 		votes: { type: Number, default: 0 },
+		devotes: { type: Number, default: 0 },
+		netVotes: { type: Number, default: 0 },
+		userVotes: [
+			{
+				userId: { type: ObjectId, ref: "User" },
+				vote: { type: String, enum: ["up", "down"] },
+			},
+		],
 		tags: [{ type: String }],
 		currentVersion: { type: Number, default: 1 },
 	},

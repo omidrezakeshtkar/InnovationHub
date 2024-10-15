@@ -13,50 +13,83 @@ function isTokenExpired(token: string): boolean {
 	return Date.now() >= exp * 1000;
 }
 
-export function startTokenRefreshService() {
-	console.log("Token refresh service started");
+let isCheckingTokens = false;
 
-	setInterval(async () => {
-		const refreshToken = localStorage.getItem("refreshToken");
-		const accessToken = localStorage.getItem("accessToken");
+export async function checkAndRefreshToken(
+	showNotification: (
+		message: string,
+		type: "success" | "error" | "info"
+	) => void
+) {
+	if (isCheckingTokens) return;
+	isCheckingTokens = true;
 
-		if (!refreshToken || !accessToken) {
-			console.log("No tokens found, skipping refresh");
-			return;
+	const refreshToken = localStorage.getItem("refreshToken");
+	const accessToken = localStorage.getItem("accessToken");
+
+	if (!refreshToken && !accessToken) {
+		console.log("No tokens found.");
+		isCheckingTokens = false;
+		return;
+	}
+
+	if (accessToken && !isTokenExpired(accessToken)) {
+		console.log("Access token is valid.");
+		isCheckingTokens = false;
+		return;
+	}
+
+	if (refreshToken && !isTokenExpired(refreshToken)) {
+		console.log("Access token expired or not present, attempting to refresh.");
+		try {
+			const response = await axios.post(refreshTokenEndpoint, { refreshToken });
+			const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+				response.data;
+
+			localStorage.setItem("accessToken", newAccessToken);
+			localStorage.setItem("refreshToken", newRefreshToken);
+			console.log("Tokens refreshed successfully.");
+		} catch (error) {
+			console.error("Error refreshing token:", error);
+			redirectToLogin(showNotification);
 		}
+	} else {
+		localStorage.removeItem("accessToken");
+		localStorage.removeItem("refreshToken");
+		redirectToLogin(showNotification);
+	}
 
-		if (isTokenExpired(accessToken)) {
-			try {
-				const config = {
-					method: "post",
-					maxBodyLength: Infinity,
-					url: refreshTokenEndpoint,
-					headers: {
-						"Content-Type": "application/json",
-					},
-					data: JSON.stringify({ refreshToken }),
-				};
-
-				const response = await axios.request(config);
-				const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-					response.data;
-
-				localStorage.setItem("accessToken", newAccessToken);
-				localStorage.setItem("refreshToken", newRefreshToken);
-				console.log("Tokens refreshed successfully");
-			} catch (error) {
-				console.error("Error refreshing token:", error);
-				// Consider implementing a redirect to login or error handling here
-			}
-		} else {
-			console.log("Access token is still valid");
-		}
-	}, 10 * 60 * 1000); // 10 minutes
+	isCheckingTokens = false;
 }
 
-// Uncomment and implement this function if you want to redirect to login
-// function redirectToLogin() {
-// 	localStorage.removeItem("accessToken");
-// 	localStorage.removeItem("refreshToken");
-// 	window.location.href = "/sign-in";
-// }
+function redirectToLogin(
+	showNotification: (
+		message: string,
+		type: "success" | "error" | "info"
+	) => void
+) {
+	localStorage.removeItem("accessToken");
+	localStorage.removeItem("refreshToken");
+	showNotification("Your session has expired. Please log in again.", "error");
+	window.location.href = "/sign-in";
+}
+
+export const checkAuthorization = async (): Promise<boolean> => {
+	try {
+		const accessToken = localStorage.getItem("accessToken");
+		if (!accessToken) {
+			return false;
+		}
+		const response = await axios.get("http://localhost:3000/api/user/profile", {
+			headers: { Authorization: `Bearer ${accessToken}` },
+		});
+		const user = response.data;
+		if (user.role === "admin" || user.role === "owner") {
+			return true;
+		} else {
+			return false;
+		}
+	} catch (error) {
+		return false;
+	}
+};

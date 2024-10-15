@@ -8,6 +8,8 @@ import logger from "../utils/logger";
 import { GetUser, UserUpdate } from "../schemas/User.schema";
 import { getUserById, IUserDetails } from "../utils/getUserById";
 import { convertIUserToIUserDetails } from "../utils/convertIUserToIUserDetails";
+import { Idea } from "../models";
+import Department from "../models/Department";
 
 export const register = async (
 	req: Request,
@@ -148,8 +150,8 @@ export const updateUserProfile = async (
 			user = await getUserById(req, res, next, userId);
 		}
 
-		// Check if the user is trying to change the role or department
-		if (role || department) {
+		// Check if the user is trying to change the role
+		if (role) {
 			if (!decoded.isOwner) {
 				return next(
 					new AppError("Only owners can change roles or departments", 403)
@@ -172,7 +174,15 @@ export const updateUserProfile = async (
 		const updateFields: { [key: string]: any } = {};
 		if (name) updateFields.name = name;
 		if (role) updateFields.role = role;
-		if (department) updateFields.department = department;
+
+		// Check if department exists and get its name
+		if (department) {
+			const departmentDoc = await Department.findById(department);
+			if (!departmentDoc) {
+				return next(new AppError("Department not found", 404));
+			}
+			updateFields.department = departmentDoc.name;
+		}
 
 		user = await User.findOneAndUpdate(
 			{ _id: userId },
@@ -195,6 +205,14 @@ export const updateUserProfile = async (
 				{ $set: { permissions: expectedPermissions } }
 			);
 			user.permissions = expectedPermissions;
+		}
+
+		// If department has been updated, update all ideas created by this user
+		if (department) {
+			await Idea.updateMany(
+				{ author: userId },
+				{ $set: { department: updateFields.department } }
+			);
 		}
 
 		res.json(user);

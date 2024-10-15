@@ -1,28 +1,38 @@
 import { Router } from "express";
-import createIdeaRoute from "./createIdeaRoute";
-import getIdeasRoute from "./getIdeasRoute";
-import getIdeaByIdRoute from "./getIdeaByIdOrTitleRoute";
-import updateIdeaRoute from "./updateIdeaRoute";
-import deleteIdeaRoute from "./deleteIdeaRoute";
-import approveIdeaRoute from "./approveIdeaRoute";
-import voteIdeaRoute from "./voteIdeaRoute";
-import devoteIdeaRoute from "./devoteIdeaRoute";
-import addCommentRoute from "./addCommentRoute";
-import getIdeaVersionsRoute from "./getIdeaVersionsRoute";
-import getPendingApprovalIdeasRoute from "./getPendingApprovalIdeasRoute";
-import getIdeaByUserRoute from "./getIdeaByUserRoute";
+// Core imports
+import createIdeaRoute from "./core/createIdeaRoute";
+import getIdeasRoute from "./core/getIdeasRoute";
+import getIdeaByIdRoute from "./core/getIdeaByIdOrTitleRoute";
+import updateIdeaRoute from "./core/updateIdeaRoute";
+import deleteIdeaRoute from "./core/deleteIdeaRoute";
+import getIdeaVersionsRoute from "./core/getIdeaVersionsRoute";
+// Interactions imports
+import approveIdeaRoute from "./interactions/approveIdeaRoute";
+import voteIdeaRoute from "./interactions/voteIdeaRoute";
+import addCommentRoute from "./interactions/addCommentRoute";
+import getCommentByIdeaRoute from "./interactions/getCommentByIdeaRoute";
+// Management imports
+import getPendingApprovalIdeasRoute from "./management/getPendingApprovalIdeasRoute";
+import getIdeaByUserRoute from "./management/getIdeaByUserRoute";
+
 const router = Router();
 
-router.use("/", createIdeaRoute);
+// Core routes
 router.use("/", getIdeasRoute);
 router.use("/", getIdeaByIdRoute);
+router.use("/", getIdeaVersionsRoute);
+router.use("/", createIdeaRoute);
 router.use("/", updateIdeaRoute);
 router.use("/", deleteIdeaRoute);
+
+// Interaction routes
+router.use("/", getCommentByIdeaRoute);
 router.use("/", approveIdeaRoute);
 router.use("/", voteIdeaRoute);
-router.use("/", devoteIdeaRoute);
 router.use("/", addCommentRoute);
-router.use("/", getIdeaVersionsRoute);
+
+// Management routes
 router.use("/", getPendingApprovalIdeasRoute);
 router.use("/", getIdeaByUserRoute);
+
 export default router;

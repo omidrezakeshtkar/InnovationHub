@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { LandingPageComponent } from "./components/landing-page";
 import { IdeasPageComponent } from "./components/ideas-page";
 import { CategoriesPageComponent } from "./components/categories-page";
@@ -12,6 +12,7 @@ import { PrivacyPolicyComponent } from "./components/privacy-policy-page";
 import { TermsOfServiceComponent } from "./components/terms-of-service-page";
 import { UserProfileComponent } from "./components/user-profile";
 import { AdminDashboardComponent } from "./components/admin-dashboard";
+import { IdeasPendingApproval } from "./components/admin-dashboard-pages/ideas";
 import { Error401Page } from "./components/Error401Page";
 import { Error403Page } from "./components/Error403Page";
 import { Error404Page } from "./components/Error404Page";
@@ -21,7 +22,7 @@ import { MaintenancePage } from "./components/MaintenancePage";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { useEffect, useState } from "react";
-import { startTokenRefreshService } from "./tokenServiceWorker";
+import { checkAndRefreshToken, checkAuthorization } from "./tokenServiceWorker";
 import { NotificationBar } from "./components/NotificationBar";
 
 // Set this to true when you want to show the maintenance page
@@ -31,6 +32,8 @@ function App() {
 	const [notifications, setNotifications] = useState<
 		{ id: number; message: string; type: "success" | "error" | "info" }[]
 	>([]);
+
+	const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
 	const showNotification = (
 		message: string,
@@ -49,11 +52,20 @@ function App() {
 	};
 
 	useEffect(() => {
-		startTokenRefreshService();
+		checkAndRefreshToken(showNotification);
+		const authorize = async () => {
+			const authorized = await checkAuthorization();
+			setIsAuthorized(authorized);
+		};
+		authorize();
 	}, []);
 
 	if (isUnderMaintenance) {
 		return <MaintenancePage />;
+	}
+
+	if (isAuthorized === null) {
+		return <div>Loading...</div>; // Or a loading spinner
 	}
 
 	return (
@@ -67,8 +79,13 @@ function App() {
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<Routes>
 						<Route path="/" element={<LandingPageComponent />} />
-						<Route path="/ideas" element={<IdeasPageComponent />} />
-						<Route path="/ideas/:id" element={<IdeaDetailComponent />} />
+						<Route
+							path="/ideas"
+							element={
+								<IdeasPageComponent showNotification={showNotification} />
+							}
+						/>
+						<Route path="/ideas/:_id" element={<IdeaDetailComponent />} />
 						<Route
 							path="/categories"
 							element={
@@ -92,7 +109,22 @@ function App() {
 							element={<ForgotPasswordComponent />}
 						/>
 						<Route path="/profile" element={<UserProfileComponent />} />
-						<Route path="/admin" element={<AdminDashboardComponent />} />
+						<Route
+							path="/admin/*"
+							element={
+								isAuthorized ? (
+									<AdminDashboardComponent />
+								) : (
+									<Navigate to="/404" />
+								)
+							}
+						/>
+						<Route
+							path="/admin/ideas"
+							element={
+								isAuthorized ? <IdeasPendingApproval /> : <Navigate to="/404" />
+							}
+						/>
 						<Route path="/401" element={<Error401Page />} />
 						<Route path="/403" element={<Error403Page />} />
 						<Route path="/500" element={<Error500Page />} />

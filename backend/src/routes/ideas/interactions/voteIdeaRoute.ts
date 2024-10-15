@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { voteIdea } from "../../handlers/ideaHandlers";
-import { auth } from "../../middleware/auth";
-import { validateRequest } from "../../middleware/validateRequest";
-import { VoteSchema, ErrorSchema } from "../../schemas/Idea.schema";
-import { registry } from "../../config/swagger";
+import { voteIdea } from "../../../handlers/ideaHandlers";
+import { auth } from "../../../middleware/auth";
+import { validateRequest } from "../../../middleware/validateRequest";
+import { VoteSchema, ErrorSchema } from "../../../schemas/Idea.schema";
+import { registry } from "../../../config/swagger";
 import { z } from "zod";
 
 const router = Router();

@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { getIdeasByUser } from "../../handlers/ideaHandlers";
-import { auth } from "../../middleware/auth";
-import { registry } from "../../config/swagger";
-import { GlobalErrorSchema } from "../../schemas";
-import { GetIdeasResponse } from "../../schemas/Idea.schema";
+import { getIdeasByUser } from "../../../handlers/ideaHandlers";
+import { auth } from "../../../middleware/auth";
+import { registry } from "../../../config/swagger";
+import { GlobalErrorSchema } from "../../../schemas";
+import { GetIdeasResponse } from "../../../schemas/Idea.schema";
 
 const router = Router();
 

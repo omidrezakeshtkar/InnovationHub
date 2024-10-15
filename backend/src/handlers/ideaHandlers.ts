@@ -31,10 +31,23 @@ export const getIdeas = async (
 	next: NextFunction
 ) => {
 	try {
+		const limit = parseInt(req.query.limit as string) || 10;
+		const offset = parseInt(req.query.offset as string) || 0;
+
 		const ideas = await Idea.find({ status: { $ne: "pending_approval" } })
 			.populate("author", "name")
-			.populate("category", "name");
-		res.json(ideas);
+			.populate("category", "name")
+			.skip(offset)
+			.limit(limit);
+
+		const totalCount = await Idea.countDocuments({ status: { $ne: "pending_approval" } });
+
+		res.json({
+			ideas,
+			totalCount,
+			limit,
+			offset
+		});
 	} catch (error) {
 		logger.error(`Error fetching ideas: ${error}`);
 		return next(new AppError("Error fetching ideas", 500));
@@ -277,24 +290,53 @@ export const voteIdea = async (
 ) => {
 	try {
 		const { id } = req.params;
+		const { vote } = req.body;
 		const decoded = getTokenPayload(req, res, next) as Token["payload"];
 		const userId = new mongoose.Types.ObjectId(decoded._id);
 
-		const idea = await Idea.findOneAndUpdate(
-			{ _id: id, status: { $ne: "pending_approval" } },
-			{ $inc: { votes: 1 } },
-			{ new: true }
-		);
+		const idea = await Idea.findOne({
+			_id: id,
+			status: { $ne: "pending_approval" },
+		});
 
 		if (!idea) {
 			logger.warn(`Idea not found for voting, id: ${id}`);
 			return next(new AppError("Idea not found", 404));
 		}
 
-		const updatedUser = await awardPoints(userId, 1);
+		// Check if the user has already voted
+		const existingVote = idea.userVotes.find((v) => v.userId.equals(userId));
+
+		if (existingVote) {
+			// If the user has already voted, update the vote
+			if (existingVote.vote !== vote) {
+				if (vote === "up") {
+					idea.votes += 1;
+					idea.devotes -= existingVote.vote === "down" ? 1 : 0;
+				} else {
+					idea.devotes += 1;
+					idea.votes -= existingVote.vote === "up" ? 1 : 0;
+				}
+				existingVote.vote = vote;
+			}
+		} else {
+			// If the user hasn't voted yet, add their vote
+			idea.userVotes.push({ userId, vote });
+			if (vote === "up") {
+				idea.votes += 1;
+			} else {
+				idea.devotes += 1;
+			}
+		}
+
+		idea.netVotes = idea.votes - idea.devotes;
+
+		await idea.save();
+
+		const updatedUser = await awardPoints(userId, vote === "up" ? 1 : -1);
 
 		if (process.env.NODE_ENV === "development") {
-			logger.debug(`Vote added to idea: ${id}`);
+			logger.debug(`Vote ${vote} added to idea: ${id}`);
 			logger.debug(`Updated user points: ${updatedUser?.points}`);
 		}
 
@@ -305,48 +347,13 @@ export const voteIdea = async (
 	}
 };
 
-export const devoteIdea = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
-	try {
-		const { id } = req.params;
-		const decoded = getTokenPayload(req, res, next) as Token["payload"];
-		const userId = new mongoose.Types.ObjectId(decoded._id);
-
-		const idea = await Idea.findOneAndUpdate(
-			{ _id: id, status: { $ne: "pending_approval" } },
-			{ $inc: { votes: -1 } },
-			{ new: true }
-		);
-
-		if (!idea) {
-			logger.warn(`Idea not found for devoting, id: ${id}`);
-			return next(new AppError("Idea not found", 404));
-		}
-
-		const updatedUser = await awardPoints(userId, -1);
-
-		if (process.env.NODE_ENV === "development") {
-			logger.debug(`Vote removed from idea: ${id}`);
-			logger.debug(`Updated user points: ${updatedUser?.points}`);
-		}
-
-		res.json({ idea, userPoints: updatedUser?.points });
-	} catch (error) {
-		logger.error(`Error devoting idea: ${error}`);
-		return next(new AppError("Error devoting idea", 500));
-	}
-};
-
 export const addComment = async (
-	req: Request<{ id: string }, {}, { content: string }>,
+	req: Request<{ _id: string }, {}, { content: string }>,
 	res: Response,
 	next: NextFunction
 ) => {
 	try {
-		const { id } = req.params;
+		const { _id } = req.params;
 		const { content } = req.body;
 		const decoded = getTokenPayload(req, res, next) as Token["payload"];
 		const userId = new mongoose.Types.ObjectId(decoded._id);
@@ -356,18 +363,18 @@ export const addComment = async (
 		}
 
 		const idea = await Idea.findOne({
-			_id: id,
+			_id: _id,
 			status: { $ne: "pending_approval" },
 		}).populate("author");
 		if (!idea) {
-			logger.warn(`Idea not found for comment, id: ${id}`);
+			logger.warn(`Idea not found for comment, id: ${_id}`);
 			return next(new AppError("Idea not found", 404));
 		}
 
 		const comment = new Comment({
 			content,
 			author: userId,
-			idea: id,
+			idea: _id,
 		});
 
 		await comment.save();
@@ -394,7 +401,7 @@ export const addComment = async (
 		}
 
 		if (process.env.NODE_ENV === "development") {
-			logger.debug(`Comment added to idea: ${id}`);
+			logger.debug(`Comment added to idea: ${_id}`);
 			logger.debug(`Updated user points: ${updatedUser?.points}`);
 		}
 
@@ -505,6 +512,56 @@ export const getIdeasByUser = async (
 	} catch (error) {
 		logger.error(`Error fetching user ideas: ${error}`);
 		return next(new AppError("Error fetching user ideas", 500));
+	}
+};
+
+export const getIdeaComments = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { _id: ideaId } = req.params;
+		const { limit = 10, offset = 0 } = req.query;
+
+		const idea = await Idea.findById(ideaId);
+
+		if (!idea) {
+			logger.warn(`Attempt to fetch comments for non-existent idea: ${ideaId}`);
+			return next(new AppError("Idea not found", 404));
+		}
+
+		const limitNum = parseInt(limit as string, 10);
+		const offsetNum = parseInt(offset as string, 10);
+
+		const totalComments = await Comment.countDocuments({ idea: ideaId });
+
+		const comments = await Comment.find({ idea: ideaId })
+			.populate("author", "name")
+			.sort({ createdAt: -1 })
+			.skip(offsetNum)
+			.limit(limitNum);
+
+		if (process.env.NODE_ENV === "development") {
+			logger.debug(
+				`Fetched ${comments.length} comments for idea: ${ideaId} (Offset: ${offsetNum}, Limit: ${limitNum})`
+			);
+		}
+
+		res.json({
+			comments,
+			totalComments,
+			offset: offsetNum,
+			limit: limitNum,
+			hasMore: offsetNum + comments.length < totalComments,
+		});
+	} catch (error) {
+		if (process.env.NODE_ENV === "development") {
+			logger.error(`Error fetching idea comments: ${error}`);
+		} else {
+			logger.error("Error fetching idea comments");
+		}
+		return next(new AppError("Error fetching idea comments", 500));
 	}
 };
 

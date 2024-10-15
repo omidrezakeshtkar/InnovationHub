@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
 	ArrowUp,
+	ArrowDown,
 	Briefcase,
 	Users,
 	Mail,
@@ -31,7 +32,10 @@ interface Idea {
 	_id: string;
 	title: string;
 	description: string;
-	author: string;
+	author: {
+		_id: string;
+		name: string;
+	};
 	coAuthors: string[];
 	status: string;
 	category: {
@@ -40,10 +44,18 @@ interface Idea {
 	};
 	department: string;
 	votes: number;
+	devotes: number;
+	netVotes: number;
 	tags: string[];
 	currentVersion: number;
+	userVotes: {
+		userId: string;
+		vote: string;
+		_id: string;
+	}[];
 	createdAt: string;
 	updatedAt: string;
+	__v: number;
 }
 
 export function UserProfileComponent() {
@@ -51,6 +63,7 @@ export function UserProfileComponent() {
 	const [user, setUser] = useState<User | null>(null);
 	const [ideas, setIdeas] = useState<Idea[]>([]);
 	const navigate = useNavigate();
+	const ideasFetched = useRef(false);
 
 	useEffect(() => {
 		const fetchUserData = async () => {
@@ -71,6 +84,7 @@ export function UserProfileComponent() {
 		};
 
 		const fetchUserIdeas = async () => {
+			if (ideasFetched.current) return;
 			try {
 				const accessToken = localStorage.getItem("accessToken");
 				const response = await axios.get(
@@ -80,6 +94,7 @@ export function UserProfileComponent() {
 					}
 				);
 				setIdeas(response.data);
+				ideasFetched.current = true;
 			} catch (error) {
 				console.error("Error fetching user ideas:", error);
 			}
@@ -178,15 +193,28 @@ export function UserProfileComponent() {
 											<p className="text-gray-600 text-sm">
 												{new Date(idea.createdAt).toLocaleDateString()}
 											</p>
+											<p className="text-gray-500 text-sm">
+												Status: {idea.status}
+											</p>
 										</div>
-										<div
-											className="flex items-center"
-											style={{ color: primaryColor }}
-										>
-											<ArrowUp size={20} />
-											<span className="ml-1 font-semibold">
-												{idea.votes} votes
-											</span>
+										<div className="flex items-center space-x-4">
+											<div className="flex items-center text-green-600">
+												<ArrowUp size={20} />
+												<span className="ml-1 font-semibold">
+													{idea.votes} votes
+												</span>
+											</div>
+											<div className="flex items-center text-red-600">
+												<ArrowDown size={20} />
+												<span className="ml-1 font-semibold">
+													{idea.devotes} devotes
+												</span>
+											</div>
+											<div className="flex items-center text-blue-600">
+												<span className="font-semibold">
+													Net: {idea.netVotes}
+												</span>
+											</div>
 										</div>
 									</div>
 								))}

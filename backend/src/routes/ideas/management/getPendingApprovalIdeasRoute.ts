@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { getPendingApprovalIdeas } from "../../handlers/ideaHandlers";
-import { auth } from "../../middleware/auth";
-import { authorize } from "../../middleware/authorize";
-import { PERMISSIONS } from "../../config/permissions";
-import { registry } from "../../config/swagger";
-import { GlobalErrorSchema } from "../../schemas";
-import { GetIdeasResponse } from "../../schemas/Idea.schema";
+import { getPendingApprovalIdeas } from "../../../handlers/ideaHandlers";
+import { auth } from "../../../middleware/auth";
+import { authorize } from "../../../middleware/authorize";
+import { PERMISSIONS } from "../../../config/permissions";
+import { registry } from "../../../config/swagger";
+import { GlobalErrorSchema } from "../../../schemas";
+import { GetIdeasResponse } from "../../../schemas/Idea.schema";
 
 const router = Router();
 

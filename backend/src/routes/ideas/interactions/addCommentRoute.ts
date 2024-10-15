@@ -1,26 +1,26 @@
 import { Router } from "express";
-import { addComment } from "../../handlers/ideaHandlers";
-import { auth } from "../../middleware/auth";
-import { validateRequest } from "../../middleware/validateRequest";
-import { GlobalErrorSchema } from "../../schemas";
+import { addComment } from "../../../handlers/ideaHandlers";
+import { auth } from "../../../middleware/auth";
+import { validateRequest } from "../../../middleware/validateRequest";
+import { GlobalErrorSchema } from "../../../schemas";
 import {
 	CommentCreateSchema,
 	CommentSchema,
-} from "../../schemas/Comment.schema";
-import { registry } from "../../config/swagger";
+} from "../../../schemas/Comment.schema";
+import { registry } from "../../../config/swagger";
 import { z } from "zod";
 
 const router = Router();
 
 registry.registerPath({
 	method: "post",
-	path: "/ideas/{id}/comments",
+	path: "/ideas/{_id}/comments",
 	summary: "Add a comment to an idea",
 	tags: ["Ideas"],
 	security: [{ bearerAuth: [] }],
 	request: {
 		params: z.object({
-			id: z
+			_id: z
 				.string()
 				.openapi({ description: "The ID of the idea to comment on" }),
 		}),
@@ -53,7 +53,7 @@ registry.registerPath({
 });
 
 router.post(
-	"/:id/comments",
+	"/:_id/comments",
 	auth,
 	validateRequest(CommentCreateSchema),
 	addComment

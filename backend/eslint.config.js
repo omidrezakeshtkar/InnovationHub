@@ -2,7 +2,7 @@ const globals = require("globals");
 const pluginJs = require("@eslint/js");
 const tseslint = require("typescript-eslint");
 
-module.exports = tseslint.config(
+const config = tseslint.config(
 	{
 		files: ["**/*.{js,mjs,cjs,ts}"],
 		languageOptions: {
@@ -34,3 +34,5 @@ module.exports = tseslint.config(
 		},
 	}
 );
+
+module.exports = config;
