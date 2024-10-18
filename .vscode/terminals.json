@@ -1,0 +1,31 @@
+{
+	"autorun": false,
+	"autokill": false,
+	"env": {},
+	"terminals": [
+		{
+			"name": "Backend Terminal",
+			"description": "Terminal for backend operations",
+			"commands": ["cd backend", "yarn", "yarn dev"],
+			"open": true,
+			"delay": 3000,
+			"focus": true
+		},
+		{
+			"name": "Frontend Terminal",
+			"description": "Terminal for frontend operations",
+			"commands": ["cd frontend", "yarn", "yarn dev"],
+			"open": true,
+			"delay": 3000,
+			"focus": false
+		},
+		{
+			"name": "Root Terminal",
+			"description": "Terminal for root operations",
+			"commands": ["echo 'Root terminal ready'"],
+			"open": true,
+			"delay": 3000,
+			"focus": false
+		}
+	]
+}

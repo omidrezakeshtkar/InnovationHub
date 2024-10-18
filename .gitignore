@@ -16,6 +16,7 @@ backend/.env
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
+!.vscode/terminals.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
