@@ -2,17 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { Search, Info, Edit, Trash } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import branding from "../branding.json";
-import { Modal } from "./Modal";
 import axios from "axios";
 
-interface Category {
-	_id: string;
-	name: string;
-	description: string;
-	createdAt: string;
-	updatedAt: string;
-	ideasCount: number;
-}
+import CreateModal from "./Modals/categories/create.modal";
+import UpdateModal from "./Modals/categories/update.modal";
+import InfoModal from "./Modals/categories/info.modal";
+import DeleteModal from "./Modals/categories/delete.modal";
+import { Category } from "./Modals/categories/types";
 
 export function CategoriesPageComponent({
 	showNotification,
@@ -24,6 +20,7 @@ export function CategoriesPageComponent({
 }) {
 	const primaryColor = branding.primaryColor || "var(--primary)";
 	const secondaryColor = branding.secondaryColor || "var(--secondary)";
+	const hoverColor = "#93A3FB"; // A color that complements 425efa for hover
 	const [searchTerm, setSearchTerm] = useState("");
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [noResults, setNoResults] = useState(false);
@@ -33,7 +30,6 @@ export function CategoriesPageComponent({
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-	const [newCategory, setNewCategory] = useState({ name: "", description: "" });
 	const [editCategory, setEditCategory] = useState<Category | null>(null);
 	const [infoCategory, setInfoCategory] = useState<Category | null>(null);
 	const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
@@ -157,110 +153,6 @@ export function CategoriesPageComponent({
 		}
 	};
 
-	const handleCreateCategory = async (e: React.FormEvent) => {
-		e.preventDefault();
-		try {
-			const accessToken = localStorage.getItem("accessToken");
-			if (!accessToken) {
-				showNotification("No access token found", "error");
-				return;
-			}
-			const response = await axios.post(
-				"http://localhost:3000/api/categories",
-				newCategory,
-				{
-					headers: {
-						Authorization: `Bearer ${accessToken}`,
-					},
-				}
-			);
-			setCategories((prevCategories) => [response.data, ...prevCategories]);
-			setNewCategory({ name: "", description: "" });
-			setIsModalOpen(false);
-			navigate("/categories");
-			showNotification("Category created successfully", "success");
-		} catch (error) {
-			console.error("Error creating category:", error);
-			showNotification(
-				"Error creating category. Please try again later.",
-				"error"
-			);
-		}
-	};
-
-	const handleEditCategory = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!editCategory) return;
-
-		try {
-			const accessToken = localStorage.getItem("accessToken");
-			if (!accessToken) {
-				showNotification("No access token found", "error");
-				return;
-			}
-			const response = await axios.put(
-				`http://localhost:3000/api/categories/${editCategory._id}`,
-				{
-					name: editCategory.name,
-					description: editCategory.description,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${accessToken}`,
-					},
-				}
-			);
-			setCategories((prevCategories) =>
-				prevCategories.map((category) =>
-					category._id === response.data._id ? response.data : category
-				)
-			);
-			setEditCategory(null);
-			setIsEditModalOpen(false);
-			navigate("/categories");
-			showNotification("Category updated successfully", "success");
-		} catch (error) {
-			console.error("Error updating category:", error);
-			showNotification(
-				"Error updating category. Please try again later.",
-				"error"
-			);
-		}
-	};
-
-	const handleDeleteCategory = async () => {
-		if (!deleteCategoryId) return;
-
-		try {
-			const accessToken = localStorage.getItem("accessToken");
-			if (!accessToken) {
-				showNotification("No access token found", "error");
-				return;
-			}
-			await axios.delete(
-				`http://localhost:3000/api/categories/${deleteCategoryId}`,
-				{
-					headers: {
-						Authorization: `Bearer ${accessToken}`,
-					},
-				}
-			);
-			setCategories((prevCategories) =>
-				prevCategories.filter((category) => category._id !== deleteCategoryId)
-			);
-			setDeleteCategoryId(null);
-			setIsDeleteModalOpen(false);
-			navigate("/categories");
-			showNotification("Category deleted successfully", "success");
-		} catch (error) {
-			console.error("Error deleting category:", error);
-			showNotification(
-				"Error deleting category. Please try again later.",
-				"error"
-			);
-		}
-	};
-
 	const handleMoreInfo = async (categoryId: string) => {
 		try {
 			const response = await axios.get(
@@ -327,168 +219,56 @@ export function CategoriesPageComponent({
 					</button>
 				)}
 
-				<Modal isOpen={isModalOpen} onClose={closeModal}>
-					<h2 className="text-xl font-bold mb-4">Create New Category</h2>
-					<form onSubmit={handleCreateCategory}>
-						<div className="mb-4">
-							<label className="block text-gray-700 text-sm font-bold mb-2">
-								Name
-							</label>
-							<input
-								type="text"
-								className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-								value={newCategory.name}
-								onChange={(e) =>
-									setNewCategory({ ...newCategory, name: e.target.value })
-								}
-								required
-							/>
-						</div>
-						<div className="mb-4">
-							<label className="block text-gray-700 text-sm font-bold mb-2">
-								Description
-							</label>
-							<textarea
-								className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-								value={newCategory.description}
-								onChange={(e) =>
-									setNewCategory({
-										...newCategory,
-										description: e.target.value,
-									})
-								}
-								required
-							></textarea>
-						</div>
-						<div className="flex items-center justify-between">
-							<button
-								type="submit"
-								className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-								style={{ backgroundColor: primaryColor }}
-							>
-								Create
-							</button>
-							<button
-								type="button"
-								className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-								onClick={closeModal}
-							>
-								Cancel
-							</button>
-						</div>
-					</form>
-				</Modal>
+				<CreateModal
+					isOpen={isModalOpen}
+					onClose={closeModal}
+					onCategoryCreated={(newCategory) => {
+						setCategories((prevCategories) => [newCategory, ...prevCategories]);
+						showNotification("Category created successfully", "success");
+					}}
+					showNotification={showNotification}
+					primaryColor={primaryColor}
+				/>
 
-				<Modal isOpen={isEditModalOpen} onClose={closeModal}>
-					<h2 className="text-xl font-bold mb-4">Edit Category</h2>
-					<form onSubmit={handleEditCategory}>
-						<div className="mb-4">
-							<label className="block text-gray-700 text-sm font-bold mb-2">
-								Name
-							</label>
-							<input
-								type="text"
-								className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-								value={editCategory?.name || ""}
-								onChange={(e) =>
-									setEditCategory((prev) =>
-										prev ? { ...prev, name: e.target.value } : null
-									)
-								}
-								required
-							/>
-						</div>
-						<div className="mb-4">
-							<label className="block text-gray-700 text-sm font-bold mb-2">
-								Description
-							</label>
-							<textarea
-								className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-								value={editCategory?.description || ""}
-								onChange={(e) =>
-									setEditCategory((prev) =>
-										prev ? { ...prev, description: e.target.value } : null
-									)
-								}
-								required
-							></textarea>
-						</div>
-						<div className="flex items-center justify-between">
-							<button
-								type="submit"
-								className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-								style={{ backgroundColor: primaryColor }}
-							>
-								Update
-							</button>
-							<button
-								type="button"
-								className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-								onClick={closeModal}
-							>
-								Cancel
-							</button>
-						</div>
-					</form>
-				</Modal>
+				<UpdateModal
+					isOpen={isEditModalOpen}
+					onClose={closeModal}
+					category={editCategory as Category}
+					onCategoryUpdated={(updatedCategory) => {
+						setCategories((prevCategories) =>
+							prevCategories.map((category) =>
+								category._id === updatedCategory._id
+									? updatedCategory
+									: category
+							)
+						);
+						showNotification("Category updated successfully", "success");
+					}}
+					showNotification={showNotification}
+					primaryColor={primaryColor}
+				/>
 
-				<Modal isOpen={isInfoModalOpen} onClose={closeModal}>
-					<h2 className="text-xl font-bold mb-4">Category Information</h2>
-					{infoCategory ? (
-						<div className="space-y-2">
-							<p>
-								<strong>Name:</strong> {infoCategory.name}
-							</p>
-							<p>
-								<strong>Description:</strong> {infoCategory.description}
-							</p>
-							<p>
-								<strong>Created At:</strong>{" "}
-								{new Date(infoCategory.createdAt).toLocaleString()}
-							</p>
-							<p>
-								<strong>Updated At:</strong>{" "}
-								{new Date(infoCategory.updatedAt).toLocaleString()}
-							</p>
-							<p>
-								<strong>Ideas Count:</strong> {infoCategory.ideasCount}
-							</p>
-							<div className="flex items-center justify-end mt-4">
-								<button
-									className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-									onClick={closeModal}
-								>
-									Close
-								</button>
-							</div>
-						</div>
-					) : (
-						<p>Loading...</p>
-					)}
-				</Modal>
+				<InfoModal
+					isOpen={isInfoModalOpen}
+					onClose={closeModal}
+					category={infoCategory}
+				/>
 
-				<Modal isOpen={isDeleteModalOpen} onClose={closeModal}>
-					<h2 className="text-xl font-bold mb-4">Confirm Deletion</h2>
-					<p>
-						Are you sure you want to delete this category? This will also delete
-						all ideas within this category.
-					</p>
-					<div className="flex items-center justify-between mt-4">
-						<button
-							className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-							style={{ backgroundColor: primaryColor }}
-							onClick={handleDeleteCategory}
-						>
-							Delete
-						</button>
-						<button
-							className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-							onClick={closeModal}
-						>
-							Cancel
-						</button>
-					</div>
-				</Modal>
+				<DeleteModal
+					isOpen={isDeleteModalOpen}
+					onClose={closeModal}
+					categoryId={deleteCategoryId}
+					onCategoryDeleted={(deletedCategoryId) => {
+						setCategories((prevCategories) =>
+							prevCategories.filter(
+								(category) => category._id !== deletedCategoryId
+							)
+						);
+						showNotification("Category deleted successfully", "success");
+					}}
+					showNotification={showNotification}
+					primaryColor={primaryColor}
+				/>
 
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 					<div className="lg:col-span-2">
@@ -512,49 +292,79 @@ export function CategoriesPageComponent({
 												<p className="text-gray-600 mb-4">
 													{category.description}
 												</p>
-												<div className="flex space-x-2 mt-4">
+												<div className="flex justify-between mt-4">
 													<button
-														className="flex items-center text-white px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
-														style={{
-															backgroundColor: primaryColor,
-														}}
+														className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
 														onClick={() =>
 															navigate(
 																`/categories?action=info&id=${category._id}`
 															)
 														}
 													>
-														<Info className="mr-2" size={16} />
-														More Info
+														<Info
+															className="mr-2"
+															size={16}
+															style={{ color: primaryColor }}
+															fill="none"
+															onMouseEnter={(e) =>
+																e.currentTarget.setAttribute("fill", hoverColor)
+															}
+															onMouseLeave={(e) =>
+																e.currentTarget.setAttribute("fill", "none")
+															}
+														/>
 													</button>
 													{isLoggedIn && (
-														<>
+														<div className="flex space-x-2">
 															<button
-																className="flex items-center text-white px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
-																style={{
-																	backgroundColor: secondaryColor,
-																}}
+																className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
 																onClick={() =>
 																	navigate(
 																		`/categories?action=update&id=${category._id}`
 																	)
 																}
 															>
-																<Edit className="mr-2" size={16} />
-																Edit
+																<Edit
+																	className="mr-2"
+																	size={16}
+																	style={{ color: primaryColor }}
+																	fill="none"
+																	onMouseEnter={(e) =>
+																		e.currentTarget.setAttribute(
+																			"fill",
+																			hoverColor
+																		)
+																	}
+																	onMouseLeave={(e) =>
+																		e.currentTarget.setAttribute("fill", "none")
+																	}
+																/>
 															</button>
 															<button
-																className="flex items-center text-white px-4 py-2 rounded-md transition duration-300 hover:opacity-90 bg-red-500"
+																className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
 																onClick={() =>
 																	navigate(
 																		`/categories?action=delete&id=${category._id}`
 																	)
 																}
 															>
-																<Trash className="mr-2" size={16} />
-																Delete
+																<Trash
+																	className="mr-2"
+																	size={16}
+																	style={{ color: primaryColor }}
+																	fill="none"
+																	onMouseEnter={(e) =>
+																		e.currentTarget.setAttribute(
+																			"fill",
+																			hoverColor
+																		)
+																	}
+																	onMouseLeave={(e) =>
+																		e.currentTarget.setAttribute("fill", "none")
+																	}
+																/>
 															</button>
-														</>
+														</div>
 													)}
 												</div>
 											</div>
