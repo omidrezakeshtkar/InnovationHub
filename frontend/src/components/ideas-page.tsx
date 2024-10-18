@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Lightbulb, Info, Edit, Trash } from "lucide-react";
 import branding from "../branding.json";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -6,6 +6,8 @@ import { CategorySidebar } from "./Modals/ideas/category.modal";
 import CreateIdeaModal from "./Modals/ideas/create.modal";
 import UpdateIdeaModal from "./Modals/ideas/update.modal";
 import DeleteIdeaModal from "./Modals/ideas/delete.modal";
+import { decodeAccessToken } from "@/tokenServiceWorker";
+import { TokenPayload } from "@/types/user.types";
 
 type Idea = {
 	_id: string;
@@ -88,36 +90,42 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 	const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
 	const [activeTab, setActiveTab] = useState<string>("featured");
+	const [hasFetchedIdeas, setHasFetchedIdeas] = useState<boolean>(false);
+	const [hasFetchedMyIdeas, setHasFetchedMyIdeas] = useState<boolean>(false);
 	const limit = 10;
-	const hasFetchedIdeas = useRef<boolean>(false);
-	const hasFetchedMyIdeas = useRef<boolean>(false);
 	const navigate = useNavigate();
 	const location = useLocation();
 
+	const accessToken = localStorage.getItem("accessToken");
+	const refreshToken = localStorage.getItem("refreshToken");
+	const user = decodeAccessToken(accessToken || "") as TokenPayload;
+	const isAdmin = user?.isAdmin || user?.isOwner;
+
 	useEffect(() => {
 		const fetchIdeas = async () => {
-			if (hasFetchedIdeas.current) return;
 			try {
 				const response = await fetch(
 					`http://localhost:3000/api/ideas?limit=${limit}&offset=${offset}`
 				);
 				const data = await response.json();
 				setHasMore(data.hasMore);
-				setFeaturedIdeas((prevIdeas) => [...prevIdeas, ...data.ideas]);
-				hasFetchedIdeas.current = true;
+				if (offset === 0) {
+					setFeaturedIdeas(data.ideas);
+				} else {
+					setFeaturedIdeas((prevIdeas) => [...prevIdeas, ...data.ideas]);
+				}
 			} catch {
 				showNotification("Error fetching ideas", "error");
 			}
 		};
 
 		fetchIdeas();
-	}, [offset, showNotification]);
+	}, [offset, showNotification, hasFetchedIdeas]);
 
 	useEffect(() => {
-		if (activeTab !== "myIdeas" || hasFetchedMyIdeas.current) return;
+		if (activeTab !== "myIdeas" || hasFetchedMyIdeas) return;
 
 		const fetchMyIdeas = async () => {
-			const accessToken = localStorage.getItem("accessToken");
 			if (!accessToken) {
 				showNotification("User not authenticated", "error");
 				return;
@@ -129,17 +137,15 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 					},
 				});
 				const data = await response.json();
-				console.log(data);
-
 				setMyIdeas(data || []);
-				hasFetchedMyIdeas.current = true;
+				setHasFetchedMyIdeas(true);
 			} catch {
 				showNotification("Error fetching your ideas", "error");
 			}
 		};
 
 		fetchMyIdeas();
-	}, [activeTab, showNotification]);
+	}, [activeTab, showNotification, hasFetchedMyIdeas]);
 
 	useEffect(() => {
 		const params = new URLSearchParams(location.search);
@@ -174,7 +180,6 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 	}, [location.search, featuredIdeas]);
 
 	const handleCreateIdea = async (newIdea: NewIdea) => {
-		const accessToken = localStorage.getItem("accessToken");
 		if (!accessToken) {
 			showNotification("User not authenticated", "error");
 			return;
@@ -192,7 +197,7 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 			const data = await response.json();
 			if (response.ok) {
 				setOffset(0);
-				hasFetchedIdeas.current = false;
+				setHasFetchedIdeas(false);
 				showNotification(
 					"Idea created successfully and is pending approval",
 					"success"
@@ -213,8 +218,30 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 		navigate("/ideas");
 	};
 
-	const accessToken = localStorage.getItem("accessToken");
-	const refreshToken = localStorage.getItem("refreshToken");
+	const handleSearch = async (term: string) => {
+		if (activeTab !== "featured") {
+			setSearchTerm("");
+			return;
+		}
+
+		setSearchTerm(term);
+
+		if (term.trim() === "") {
+			setOffset(0);
+			setHasFetchedIdeas(false);
+			return;
+		}
+
+		try {
+			const response = await fetch(
+				`http://localhost:3000/api/ideas/search?title=${term}`
+			);
+			const data = await response.json();
+			setFeaturedIdeas(data);
+		} catch {
+			showNotification("Error searching ideas", "error");
+		}
+	};
 
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-8 px-4 sm:px-6 lg:px-8">
@@ -237,7 +264,8 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 							boxShadow: `0 0 0 2px ${primaryColor}30`,
 						}}
 						value={searchTerm}
-						onChange={(e) => setSearchTerm(e.target.value)}
+						onChange={(e) => handleSearch(e.target.value)}
+						disabled={activeTab !== "featured"}
 					/>
 					<Search
 						className="absolute right-3 top-2.5 text-gray-400"
@@ -318,9 +346,8 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 						</button>
 					)}
 				</div>
-
-				{activeTab === "featured" && (
-					<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+					{activeTab === "featured" && (
 						<div className="lg:col-span-2">
 							<h2 className="text-2xl font-bold text-gray-800 mb-4">
 								Featured
@@ -347,20 +374,8 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 														style={{ color: primaryColor }}
 													/>
 												</button>
-												{accessToken && refreshToken && (
+												{accessToken && refreshToken && isAdmin && (
 													<div className="flex space-x-2">
-														<button
-															className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
-															onClick={() =>
-																navigate(`/ideas?action=update&id=${idea._id}`)
-															}
-														>
-															<Edit
-																className="mr-2"
-																size={16}
-																style={{ color: primaryColor }}
-															/>
-														</button>
 														<button
 															className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
 															onClick={() =>
@@ -379,57 +394,56 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 										</div>
 									</div>
 								))}
-							</div>
 
-							{hasMore && (
-								<button
-									className="w-full bg-gray-200 text-gray-700 py-2 rounded-md mt-6 hover:bg-gray-300 transition duration-300"
-									onClick={() => setOffset((prevOffset) => prevOffset + limit)}
-								>
-									Load more
-								</button>
-							)}
-
-							<h2 className="text-2xl font-bold text-gray-800 mt-12 mb-4">
-								Recently added (Mock Data)
-							</h2>
-							<div className="space-y-4">
-								{recentIdeas.map((idea, index) => (
-									<div
-										key={index}
-										className="bg-gray-800 text-white p-4 rounded-lg flex justify-between items-center"
+								{hasMore && (
+									<button
+										className="w-full bg-gray-200 text-gray-700 py-2 rounded-md mt-6 hover:bg-gray-300 transition duration-300"
+										onClick={() => {
+											setOffset((prevOffset) => prevOffset + limit);
+											setHasFetchedIdeas(false);
+										}}
 									>
-										<div className="flex items-center">
-											<Lightbulb
-												className="mr-3"
-												size={24}
-												style={{ color: primaryColor }}
-											/>
-											<div>
-												<h3 className="font-semibold">{idea.title}</h3>
-												<p className="text-sm text-gray-400">
-													{idea.days} days ago • {idea.votes} votes
-												</p>
+										Load more
+									</button>
+								)}
+
+								<h2 className="text-2xl font-bold text-gray-800 mt-12 mb-4">
+									Recently added (Mock Data)
+								</h2>
+								<div className="space-y-4">
+									{recentIdeas.map((idea, index) => (
+										<div
+											key={index}
+											className="bg-gray-800 text-white p-4 rounded-lg flex justify-between items-center"
+										>
+											<div className="flex items-center">
+												<Lightbulb
+													className="mr-3"
+													size={24}
+													style={{ color: primaryColor }}
+												/>
+												<div>
+													<h3 className="font-semibold">{idea.title}</h3>
+													<p className="text-sm text-gray-400">
+														{idea.days} days ago • {idea.votes} votes
+													</p>
+												</div>
 											</div>
+											<span className="text-2xl font-bold">{idea.votes}</span>
 										</div>
-										<span className="text-2xl font-bold">{idea.votes}</span>
-									</div>
-								))}
+									))}
+								</div>
 							</div>
 						</div>
+					)}
 
-						<CategorySidebar showNotification={showNotification} />
-					</div>
-				)}
-
-				{activeTab === "myIdeas" && (
-					<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+					{activeTab === "myIdeas" && (
 						<div className="lg:col-span-2">
 							<h2 className="text-2xl font-bold text-gray-800 mb-4">
 								My Ideas
 							</h2>
 							<div className="space-y-6">
-								{myIdeas.map((idea: MyIdea) => (
+								{myIdeas.map((idea: Idea) => (
 									<div
 										key={idea._id}
 										className="bg-white rounded-lg shadow-md overflow-hidden"
@@ -484,10 +498,9 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 								))}
 							</div>
 						</div>
-
-						<CategorySidebar showNotification={showNotification} />
-					</div>
-				)}
+					)}
+					<CategorySidebar showNotification={showNotification} />
+				</div>
 			</div>
 		</div>
 	);

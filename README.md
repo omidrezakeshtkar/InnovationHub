@@ -9,9 +9,10 @@ InnovationHub is a platform designed to foster innovation and collaboration with
 To set up the development environment for InnovationHub, follow these steps:
 
 1. **Clone the Repository**: Clone the project repository to your local machine.
-2. **Install Dependencies**: Run `yarn install` to install all necessary dependencies.
-3. **Environment Configuration**: Copy `.env.example` to `.env` and fill in the required configuration values.
-4. **Start Development Server**: Use `yarn dev` to start the development server.
+2. **Install Dependencies**: Run `yarn install` to install all necessary dependencies for both frontend and backend.
+3. **Environment Configuration**: Copy `.env.example` to `.env` in the backend directory and fill in the required configuration values.
+4. **Start Development Server**: Use `docker compose -f docker-compose.dev.yml up` to start the development environment, which includes the backend, MongoDB, Redis, MinIO, and MailHog services. The backend service will automatically run `yarn predev` followed by `yarn dev`. Alternatively, you can manually run `yarn predev` to start the backend services.
+5. **Frontend Development**: To run the frontend, navigate to the `frontend` directory and use the scripts defined in `package.json`. You can start the development server with `yarn dev`, build the project with `yarn build`, and preview the build with `yarn preview`.
 
 ## Email Testing
 
@@ -19,7 +20,7 @@ InnovationHub uses MailHog for email testing in the development environment. Mai
 
 ### Accessing MailHog
 
-1. **Start the Development Environment**: Ensure the development server is running with `yarn dev`.
+1. **Start the Development Environment**: Ensure the development environment is running with `docker compose -f docker-compose.dev.yml up`.
 2. **Open MailHog Interface**: Go to `http://localhost:8025` in your web browser.
 
 All emails sent by the application in development mode will be captured by MailHog and displayed in this interface.

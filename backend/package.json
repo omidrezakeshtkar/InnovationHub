@@ -1,6 +1,6 @@
 {
 	"name": "innovation-hub-backend",
-	"version": "2.0.0",
+	"version": "1.0.0",
 	"main": "dist/server.js",
 	"engines": {
 		"node": ">=20.0.0"
@@ -26,7 +26,7 @@
 	},
 	"keywords": [],
 	"author": "",
-	"license": "ISC",
+	"license": "MIT",
 	"description": "",
 	"dependencies": {
 		"@asteasolutions/zod-to-openapi": "^7.1.2",
