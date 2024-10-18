@@ -40,13 +40,16 @@ export const getIdeas = async (
 			.skip(offset)
 			.limit(limit);
 
-		const totalCount = await Idea.countDocuments({ status: { $ne: "pending_approval" } });
+		const totalCount = await Idea.countDocuments({
+			status: { $ne: "pending_approval" },
+		});
 
 		res.json({
 			ideas,
 			totalCount,
 			limit,
-			offset
+			offset,
+			hasMore: offset + ideas.length < totalCount,
 		});
 	} catch (error) {
 		logger.error(`Error fetching ideas: ${error}`);
@@ -501,6 +504,7 @@ export const getIdeasByUser = async (
 		const userId = new mongoose.Types.ObjectId(decoded._id);
 
 		const ideas = await Idea.find({ author: userId })
+			.populate("author", "name")
 			.populate("category", "name")
 			.sort({ createdAt: -1 });
 

@@ -49,11 +49,12 @@ export async function checkAndRefreshToken(
 			localStorage.setItem("accessToken", newAccessToken);
 			localStorage.setItem("refreshToken", newRefreshToken);
 			console.log("Tokens refreshed successfully.");
+			window.location.reload(); // Reload the page after refreshing tokens
 		} catch (error) {
 			console.error("Error refreshing token:", error);
 			redirectToLogin(showNotification);
 		}
-	} else {
+	} else if (refreshToken && isTokenExpired(refreshToken)) {
 		localStorage.removeItem("accessToken");
 		localStorage.removeItem("refreshToken");
 		redirectToLogin(showNotification);

@@ -305,13 +305,13 @@ export function CategoriesPageComponent({
 															className="mr-2"
 															size={16}
 															style={{ color: primaryColor }}
-															fill="none"
-															onMouseEnter={(e) =>
-																e.currentTarget.setAttribute("fill", hoverColor)
-															}
-															onMouseLeave={(e) =>
-																e.currentTarget.setAttribute("fill", "none")
-															}
+															// fill="none"
+															// onMouseEnter={(e) =>
+															// 	e.currentTarget.setAttribute("fill", hoverColor)
+															// }
+															// onMouseLeave={(e) =>
+															// 	e.currentTarget.setAttribute("fill", "none")
+															// }
 														/>
 													</button>
 													{isLoggedIn && (
@@ -328,16 +328,16 @@ export function CategoriesPageComponent({
 																	className="mr-2"
 																	size={16}
 																	style={{ color: primaryColor }}
-																	fill="none"
-																	onMouseEnter={(e) =>
-																		e.currentTarget.setAttribute(
-																			"fill",
-																			hoverColor
-																		)
-																	}
-																	onMouseLeave={(e) =>
-																		e.currentTarget.setAttribute("fill", "none")
-																	}
+																	// fill="none"
+																	// onMouseEnter={(e) =>
+																	// 	e.currentTarget.setAttribute(
+																	// 		"fill",
+																	// 		hoverColor
+																	// 	)
+																	// }
+																	// onMouseLeave={(e) =>
+																	// 	e.currentTarget.setAttribute("fill", "none")
+																	// }
 																/>
 															</button>
 															<button
@@ -352,16 +352,16 @@ export function CategoriesPageComponent({
 																	className="mr-2"
 																	size={16}
 																	style={{ color: primaryColor }}
-																	fill="none"
-																	onMouseEnter={(e) =>
-																		e.currentTarget.setAttribute(
-																			"fill",
-																			hoverColor
-																		)
-																	}
-																	onMouseLeave={(e) =>
-																		e.currentTarget.setAttribute("fill", "none")
-																	}
+																	// fill="none"
+																	// onMouseEnter={(e) =>
+																	// 	e.currentTarget.setAttribute(
+																	// 		"fill",
+																	// 		hoverColor
+																	// 	)
+																	// }
+																	// onMouseLeave={(e) =>
+																	// 	e.currentTarget.setAttribute("fill", "none")
+																	// }
 																/>
 															</button>
 														</div>

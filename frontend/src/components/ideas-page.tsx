@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Lightbulb } from "lucide-react";
+import { Search, Lightbulb, Info, Edit, Trash } from "lucide-react";
 import branding from "../branding.json";
-import { useNavigate } from "react-router-dom";
-import { CreateIdeaModal } from "./Modals/ideas/create.modal";
+import { useNavigate, useLocation } from "react-router-dom";
 import { CategorySidebar } from "./Modals/ideas/category.modal";
+import CreateIdeaModal from "./Modals/ideas/create.modal";
+import UpdateIdeaModal from "./Modals/ideas/update.modal";
+import DeleteIdeaModal from "./Modals/ideas/delete.modal";
 
 type Idea = {
 	_id: string;
@@ -78,12 +80,19 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 	const primaryColor = branding.primaryColor || "var(--primary)";
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [featuredIdeas, setFeaturedIdeas] = useState<Idea[]>([]);
+	const [myIdeas, setMyIdeas] = useState<Idea[]>([]);
 	const [offset, setOffset] = useState<number>(0);
 	const [hasMore, setHasMore] = useState<boolean>(true);
-	const [showModal, setShowModal] = useState<boolean>(false);
+	const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+	const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+	const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
+	const [activeTab, setActiveTab] = useState<string>("featured");
 	const limit = 10;
 	const hasFetchedIdeas = useRef<boolean>(false);
+	const hasFetchedMyIdeas = useRef<boolean>(false);
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	useEffect(() => {
 		const fetchIdeas = async () => {
@@ -93,12 +102,8 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 					`http://localhost:3000/api/ideas?limit=${limit}&offset=${offset}`
 				);
 				const data = await response.json();
-				if (data.ideas.length < limit) {
-					setHasMore(false);
-				} else {
-					setHasMore(true);
-				}
-				setFeaturedIdeas(data.ideas);
+				setHasMore(data.hasMore);
+				setFeaturedIdeas((prevIdeas) => [...prevIdeas, ...data.ideas]);
 				hasFetchedIdeas.current = true;
 			} catch {
 				showNotification("Error fetching ideas", "error");
@@ -107,6 +112,66 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 
 		fetchIdeas();
 	}, [offset, showNotification]);
+
+	useEffect(() => {
+		if (activeTab !== "myIdeas" || hasFetchedMyIdeas.current) return;
+
+		const fetchMyIdeas = async () => {
+			const accessToken = localStorage.getItem("accessToken");
+			if (!accessToken) {
+				showNotification("User not authenticated", "error");
+				return;
+			}
+			try {
+				const response = await fetch("http://localhost:3000/api/ideas/user", {
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+				});
+				const data = await response.json();
+				console.log(data);
+
+				setMyIdeas(data || []);
+				hasFetchedMyIdeas.current = true;
+			} catch {
+				showNotification("Error fetching your ideas", "error");
+			}
+		};
+
+		fetchMyIdeas();
+	}, [activeTab, showNotification]);
+
+	useEffect(() => {
+		const params = new URLSearchParams(location.search);
+		const action = params.get("action");
+		const id = params.get("id");
+
+		switch (action) {
+			case "create":
+				setIsCreateModalOpen(true);
+				break;
+			case "update":
+				if (id) {
+					const idea = featuredIdeas.find((idea) => idea._id === id);
+					if (idea) {
+						setSelectedIdea(idea);
+						setIsUpdateModalOpen(true);
+					}
+				}
+				break;
+			case "delete":
+				if (id) {
+					const idea = featuredIdeas.find((idea) => idea._id === id);
+					if (idea) {
+						setSelectedIdea(idea);
+						setIsDeleteModalOpen(true);
+					}
+				}
+				break;
+			default:
+				break;
+		}
+	}, [location.search, featuredIdeas]);
 
 	const handleCreateIdea = async (newIdea: NewIdea) => {
 		const accessToken = localStorage.getItem("accessToken");
@@ -138,6 +203,14 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 		} catch {
 			showNotification("Error creating idea", "error");
 		}
+	};
+
+	const closeModal = () => {
+		setIsCreateModalOpen(false);
+		setIsUpdateModalOpen(false);
+		setIsDeleteModalOpen(false);
+		setSelectedIdea(null);
+		navigate("/ideas");
 	};
 
 	const accessToken = localStorage.getItem("accessToken");
@@ -176,87 +249,245 @@ export const IdeasPageComponent: React.FC<IdeasPageComponentProps> = ({
 					<button
 						className="mb-8 text-white px-4 py-2 rounded-md"
 						style={{ backgroundColor: primaryColor }}
-						onClick={() => setShowModal(true)}
+						onClick={() => navigate("/ideas?action=create")}
 					>
 						Create Idea
 					</button>
 				)}
 
 				<CreateIdeaModal
-					isOpen={showModal}
-					onClose={() => setShowModal(false)}
+					isOpen={isCreateModalOpen}
+					onClose={closeModal}
 					onCreateIdea={handleCreateIdea}
 					showNotification={showNotification}
 				/>
 
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-					<div className="lg:col-span-2">
-						<h2 className="text-2xl font-bold text-gray-800 mb-4">Featured</h2>
-						<div className="space-y-6">
-							{featuredIdeas.map((idea) => (
-								<div
-									key={idea._id}
-									className="bg-white rounded-lg shadow-md overflow-hidden"
-								>
-									<div className="p-6">
-										<h3 className="text-xl font-semibold text-gray-800 mb-2">
-											{idea.title}
-										</h3>
-										<p className="text-gray-600 mb-4">{idea.description}</p>
-										<button
-											className="text-white px-4 py-2 rounded-md transition duration-300"
-											style={{
-												backgroundColor: primaryColor,
-												filter: "brightness(90%)",
-											}}
-											onClick={() => navigate(`/ideas/${idea._id}`)}
-										>
-											View details
-										</button>
-									</div>
-								</div>
-							))}
-						</div>
+				<UpdateIdeaModal
+					isOpen={isUpdateModalOpen}
+					onClose={closeModal}
+					idea={selectedIdea}
+					onUpdateIdea={(updatedIdea) => {
+						setFeaturedIdeas((prevIdeas) =>
+							prevIdeas.map((idea) =>
+								idea._id === updatedIdea._id ? updatedIdea : idea
+							)
+						);
+						showNotification("Idea updated successfully", "success");
+					}}
+					showNotification={showNotification}
+				/>
 
-						{hasMore && (
-							<button
-								className="w-full bg-gray-200 text-gray-700 py-2 rounded-md mt-6 hover:bg-gray-300 transition duration-300"
-								onClick={() => setOffset((prevOffset) => prevOffset + limit)}
-							>
-								Load more
-							</button>
-						)}
+				<DeleteIdeaModal
+					isOpen={isDeleteModalOpen}
+					onClose={closeModal}
+					ideaId={selectedIdea?._id}
+					onDeleteIdea={(deletedIdeaId) => {
+						setFeaturedIdeas((prevIdeas) =>
+							prevIdeas.filter((idea) => idea._id !== deletedIdeaId)
+						);
+						showNotification("Idea deleted successfully", "success");
+					}}
+					showNotification={showNotification}
+				/>
 
-						<h2 className="text-2xl font-bold text-gray-800 mt-12 mb-4">
-							Recently added (Mock Data)
-						</h2>
-						<div className="space-y-4">
-							{recentIdeas.map((idea, index) => (
-								<div
-									key={index}
-									className="bg-gray-800 text-white p-4 rounded-lg flex justify-between items-center"
-								>
-									<div className="flex items-center">
-										<Lightbulb
-											className="mr-3"
-											size={24}
-											style={{ color: primaryColor }}
-										/>
-										<div>
-											<h3 className="font-semibold">{idea.title}</h3>
-											<p className="text-sm text-gray-400">
-												{idea.days} days ago • {idea.votes} votes
-											</p>
+				<div className="flex space-x-4 mb-8">
+					<button
+						className={`px-4 py-2 rounded-md ${
+							activeTab === "featured" ? "text-white" : "text-gray-800"
+						}`}
+						style={{
+							backgroundColor:
+								activeTab === "featured" ? primaryColor : `${primaryColor}30`,
+						}}
+						onClick={() => setActiveTab("featured")}
+					>
+						Featured Ideas
+					</button>
+					{accessToken && refreshToken && (
+						<button
+							className={`px-4 py-2 rounded-md ${
+								activeTab === "myIdeas" ? "text-white" : "text-gray-800"
+							}`}
+							style={{
+								backgroundColor:
+									activeTab === "myIdeas" ? primaryColor : `${primaryColor}30`,
+							}}
+							onClick={() => setActiveTab("myIdeas")}
+						>
+							My Ideas
+						</button>
+					)}
+				</div>
+
+				{activeTab === "featured" && (
+					<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+						<div className="lg:col-span-2">
+							<h2 className="text-2xl font-bold text-gray-800 mb-4">
+								Featured
+							</h2>
+							<div className="space-y-6">
+								{featuredIdeas.map((idea) => (
+									<div
+										key={idea._id}
+										className="bg-white rounded-lg shadow-md overflow-hidden"
+									>
+										<div className="p-6">
+											<h3 className="text-xl font-semibold text-gray-800 mb-2">
+												{idea.title}
+											</h3>
+											<p className="text-gray-600 mb-4">{idea.description}</p>
+											<div className="flex justify-between mt-4">
+												<button
+													className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
+													onClick={() => navigate(`/ideas/${idea._id}`)}
+												>
+													<Info
+														className="mr-2"
+														size={16}
+														style={{ color: primaryColor }}
+													/>
+												</button>
+												{accessToken && refreshToken && (
+													<div className="flex space-x-2">
+														<button
+															className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
+															onClick={() =>
+																navigate(`/ideas?action=update&id=${idea._id}`)
+															}
+														>
+															<Edit
+																className="mr-2"
+																size={16}
+																style={{ color: primaryColor }}
+															/>
+														</button>
+														<button
+															className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
+															onClick={() =>
+																navigate(`/ideas?action=delete&id=${idea._id}`)
+															}
+														>
+															<Trash
+																className="mr-2"
+																size={16}
+																style={{ color: primaryColor }}
+															/>
+														</button>
+													</div>
+												)}
+											</div>
 										</div>
 									</div>
-									<span className="text-2xl font-bold">{idea.votes}</span>
-								</div>
-							))}
-						</div>
-					</div>
+								))}
+							</div>
 
-					<CategorySidebar showNotification={showNotification} />
-				</div>
+							{hasMore && (
+								<button
+									className="w-full bg-gray-200 text-gray-700 py-2 rounded-md mt-6 hover:bg-gray-300 transition duration-300"
+									onClick={() => setOffset((prevOffset) => prevOffset + limit)}
+								>
+									Load more
+								</button>
+							)}
+
+							<h2 className="text-2xl font-bold text-gray-800 mt-12 mb-4">
+								Recently added (Mock Data)
+							</h2>
+							<div className="space-y-4">
+								{recentIdeas.map((idea, index) => (
+									<div
+										key={index}
+										className="bg-gray-800 text-white p-4 rounded-lg flex justify-between items-center"
+									>
+										<div className="flex items-center">
+											<Lightbulb
+												className="mr-3"
+												size={24}
+												style={{ color: primaryColor }}
+											/>
+											<div>
+												<h3 className="font-semibold">{idea.title}</h3>
+												<p className="text-sm text-gray-400">
+													{idea.days} days ago • {idea.votes} votes
+												</p>
+											</div>
+										</div>
+										<span className="text-2xl font-bold">{idea.votes}</span>
+									</div>
+								))}
+							</div>
+						</div>
+
+						<CategorySidebar showNotification={showNotification} />
+					</div>
+				)}
+
+				{activeTab === "myIdeas" && (
+					<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+						<div className="lg:col-span-2">
+							<h2 className="text-2xl font-bold text-gray-800 mb-4">
+								My Ideas
+							</h2>
+							<div className="space-y-6">
+								{myIdeas.map((idea: MyIdea) => (
+									<div
+										key={idea._id}
+										className="bg-white rounded-lg shadow-md overflow-hidden"
+									>
+										<div className="p-6">
+											<h3 className="text-xl font-semibold text-gray-800 mb-2">
+												{idea.title}
+											</h3>
+											<p className="text-gray-600 mb-4">{idea.description}</p>
+											<div className="flex justify-between mt-4">
+												<button
+													className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
+													onClick={() => navigate(`/ideas/${idea._id}`)}
+												>
+													<Info
+														className="mr-2"
+														size={16}
+														style={{ color: primaryColor }}
+													/>
+												</button>
+												{accessToken && refreshToken && (
+													<div className="flex space-x-2">
+														<button
+															className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
+															onClick={() =>
+																navigate(`/ideas?action=update&id=${idea._id}`)
+															}
+														>
+															<Edit
+																className="mr-2"
+																size={16}
+																style={{ color: primaryColor }}
+															/>
+														</button>
+														<button
+															className="flex items-center text-gray-800 px-4 py-2 rounded-md transition duration-300 hover:opacity-90"
+															onClick={() =>
+																navigate(`/ideas?action=delete&id=${idea._id}`)
+															}
+														>
+															<Trash
+																className="mr-2"
+																size={16}
+																style={{ color: primaryColor }}
+															/>
+														</button>
+													</div>
+												)}
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
+
+						<CategorySidebar showNotification={showNotification} />
+					</div>
+				)}
 			</div>
 		</div>
 	);
