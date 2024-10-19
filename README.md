@@ -67,3 +67,5 @@ This combination allowed me to leverage the strengths of each model: OpenAI for 
 ## License
 
 InnovationHub is open-source software licensed under the MIT License. See the `LICENSE` file for more information.
+
+If I get enough time, I will definitely expand this file with more detailed sections. For now, I have only been able to include this much information in the README.md file, and in the future, it will be more complete. I will try to address more details and the uses of LLMs even in this README.md file. Even for creating this file, LLMs were used in some parts. 😄
