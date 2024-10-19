@@ -40,7 +40,7 @@ This project has been significantly developed with the assistance of Large Langu
 
 - An advanced language model developed by OpenAI
 - An advanced language model developed by Anthropic
-- An AI-enhanced code editor, specifically [Cursor](https://cursor.com), utilizing its feature Composer
+- An AI-enhanced code editor, specifically [Cursor IDE](https://cursor.com), utilizing its feature Composer
 - Vercel's v0 tools for initial frontend page creation and development, further enhanced by Cursor IDE's Composer
 - [To be filled after obtaining permission from the developers]
 
