@@ -22,7 +22,7 @@ export default {
 		secretKey: process.env.MINIO_SECRET_KEY || "minioadmin",
 	},
 	email: {
-		host: process.env.EMAIL_HOST || "mailhog.localhost", // Use 'localhost' if MailHog is running locally
+		host: process.env.EMAIL_HOST || "localhost", // Use 'localhost' if MailHog is running locally
 		port: parseInt(process.env.EMAIL_PORT || "1025", 10),
 		secure: process.env.EMAIL_SECURE === "true",
 		user: process.env.EMAIL_USER || undefined,
