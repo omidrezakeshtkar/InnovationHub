@@ -2,3 +2,31 @@ modules = ["nodejs-20", "web"]
 
 [nix]
 channel = "stable-24_05"
+
+[env]
+NODE_ENV = "development"
+DATABASE_URL = "mongodb://mongodb:27017/innovationHub"
+EMAIL_HOST = "mailhog"
+EMAIL_PORT = "1025"
+EMAIL_SECURE = "false"
+REDIS_URL = "redis://redis:6379"
+MINIO_ENDPOINT = "minio"
+MINIO_PORT = "9000"
+MINIO_ACCESS_KEY = "minioadmin"
+MINIO_SECRET_KEY = "minioadmin"
+
+[entrypoint]
+command = "yarn dev"
+path = "/usr/src/app"
+
+[dependencies]
+packageManager = "yarn"
+nodeVersion = "20"
+
+[ports]
+backend = "3000"
+mongodb = "27017"
+redis = "6379"
+minio = "9000"
+mailhog_smtp = "1025"
+mailhog_ui = "8025"
