@@ -41,12 +41,16 @@ This project has been significantly developed with the assistance of Large Langu
 - An advanced language model developed by OpenAI
 - An advanced language model developed by Anthropic
 - An AI-enhanced code editor, specifically [Cursor](https://cursor.com), utilizing its feature Composer
+- Vercel's v0 tools for initial frontend page creation and development, further enhanced by Cursor IDE's Composer
+- [To be filled after obtaining permission from the developers]
 
 These tools have been instrumental in generating code, solving problems, and enhancing the development process. Our use of these technologies is for educational and developmental purposes, and does not imply any official endorsement or affiliation.
 
 We are committed to the ethical use of AI in development. If any concerns arise regarding our acknowledgements, we are open to addressing them promptly.
 
 I refrained from directly naming the specific language models due to concerns about violating policies, so I only mentioned the companies. However, if it is clearly stated in these companies' licenses that using model names in open source projects is not against the rules, I will include the specific models used in this project. Nonetheless, by mentioning the companies, I am confident that readers can infer which models were used.
+
+Additionally, the UI/UX design was assisted by an AI tool, the name of which will be disclosed after obtaining direct permission from its developers.
 
 ## AI Assistance Details
 
