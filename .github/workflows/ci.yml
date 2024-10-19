@@ -1,0 +1,11 @@
+name: Semgrep Analysis
+
+on: push
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
