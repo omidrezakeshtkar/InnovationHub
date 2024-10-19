@@ -15,18 +15,32 @@ MINIO_PORT = "9000"
 MINIO_ACCESS_KEY = "minioadmin"
 MINIO_SECRET_KEY = "minioadmin"
 
-[entrypoint]
-command = "yarn dev"
-path = "/usr/src/app"
+run = "cd frontend && yarn dev; cd backend && yarn dev"
 
-[dependencies]
-packageManager = "yarn"
-nodeVersion = "20"
+[[ports]]
+localPort = 5173
+externalPort = 80
 
-[ports]
-backend = "3000"
-mongodb = "27017"
-redis = "6379"
-minio = "9000"
-mailhog_smtp = "1025"
-mailhog_ui = "8025"
+[[ports]]
+localPort = 3000
+externalPort = 3000
+
+[[ports]]
+localPort = 27017
+externalPort = 27017
+
+[[ports]]
+localPort = 6379
+externalPort = 6379
+
+[[ports]]
+localPort = 9000
+externalPort = 9000
+
+[[ports]]
+localPort = 1025
+externalPort = 1025
+
+[[ports]]
+localPort = 8025
+externalPort = 8025
